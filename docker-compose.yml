@@ -1,0 +1,24 @@
+
+services:
+  maria :
+    image: mariadb:latest
+    container_name: mariadb
+    ports:
+      - 3306:3306
+    volumes:
+      - ~/docker/mariadb/etc/mysql/conf.d:/etc/mysql/conf.d:ro
+      - ~/docker/mariadb/var/lib/mysql:/var/lib/mysql
+      - ~/docker/mariadb/var/log/maria:/var/log/maria
+    environment:
+      - TZ="Asia/Seoul"
+      - ALLOW_EMPTY_PASSWORD=no
+      - MARIADB_ROOT_PASSWORD=1234
+      - MARIADB_USER=root
+      - MARIADB_DATABASE=code-challenge
+      - MARIADB_PASSWORD=1234
+    networks:
+      - backend
+    restart: always
+
+networks:
+  backend:
