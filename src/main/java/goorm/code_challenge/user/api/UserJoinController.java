@@ -8,26 +8,31 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import goorm.code_challenge.global.exception.BaseController;
+import goorm.code_challenge.global.exception.CustomException;
+import goorm.code_challenge.global.exception.ErrorCode;
+import goorm.code_challenge.global.exception.ApiResponse;
 import goorm.code_challenge.user.application.UserJoinService;
+import goorm.code_challenge.user.domain.User;
 import goorm.code_challenge.user.dto.request.UserJoinRequest;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api")
-public class UserJoinController {
-	private UserJoinService service;
-
+public class UserJoinController extends BaseController {
+	private final UserJoinService service;
 
 	@PostMapping("/join")
-	public String join(@Validated @RequestBody UserJoinRequest userJoinRequest, Errors errors){
-		if(errors.hasErrors()){
-			for(FieldError error :errors.getFieldErrors()){
-				System.out.println(error.getDefaultMessage());
+	public ApiResponse<User> join(@Validated @RequestBody UserJoinRequest userJoinRequest,
+		Errors errors) {
+		if (errors.hasErrors()) {
+			for (FieldError error : errors.getFieldErrors()) {
+				;
+				throw new CustomException(ErrorCode.BAD_REQUEST, error.getDefaultMessage());
 			}
 		}
-		service.joinService(userJoinRequest);
-
-		return "ok";
+		User user = service.joinService(userJoinRequest);
+		return makeAPIResponse(user);
 	}
 }
