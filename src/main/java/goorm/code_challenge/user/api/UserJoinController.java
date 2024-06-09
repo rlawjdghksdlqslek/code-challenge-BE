@@ -19,20 +19,18 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api")
 public class UserJoinController extends BaseController {
 	private final UserJoinService service;
 
 	@PostMapping("/join")
-	public ApiResponse<User> join(@Validated @RequestBody UserJoinRequest userJoinRequest,
+	public ApiResponse<String> join(@Validated @RequestBody UserJoinRequest userJoinRequest,
 		Errors errors) {
 		if (errors.hasErrors()) {
 			for (FieldError error : errors.getFieldErrors()) {
-				;
 				throw new CustomException(ErrorCode.BAD_REQUEST, error.getDefaultMessage());
 			}
 		}
 		User user = service.joinService(userJoinRequest);
-		return makeAPIResponse(user);
+		return makeAPIResponse("회원가입 성공!");
 	}
 }

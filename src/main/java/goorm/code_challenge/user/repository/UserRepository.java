@@ -7,4 +7,6 @@ import goorm.code_challenge.user.domain.User;
 public interface UserRepository extends JpaRepository<User,Long> {
 	Boolean existsByName(String name);
 	Boolean existsByLoginId(String loginId);
+	User findByLoginId(String loginId);
+
 }

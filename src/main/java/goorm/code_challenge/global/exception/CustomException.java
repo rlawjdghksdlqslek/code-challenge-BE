@@ -1,6 +1,7 @@
 package goorm.code_challenge.global.exception;
 
 import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import lombok.Getter;
 
@@ -14,6 +15,7 @@ public class CustomException extends RuntimeException {
 	}
 
 	public CustomException(ErrorCode errorCode, String message) {
+		super(message);
 		this.errorCode = errorCode;
 		this.message = message;
 	}

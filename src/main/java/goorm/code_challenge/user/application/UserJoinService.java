@@ -30,6 +30,7 @@ public class UserJoinService {
 			throw new CustomException(ErrorCode.CONFLICT, "존재하는 ID 입니다");
 		}
 		User joinUser = new User();
+		joinUser.setRole("ROLE_ADMIN");
 		joinUser.setLoginId(loginId);
 		joinUser.setPassword(bCryptPasswordEncoder.encode(password));
 		joinUser.setName(name);
