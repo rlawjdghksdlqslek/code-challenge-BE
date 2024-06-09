@@ -3,9 +3,11 @@ package goorm.code_challenge.jwt.filter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -22,21 +24,21 @@ import goorm.code_challenge.global.exception.ApiResponse;
 import goorm.code_challenge.global.exception.CustomException;
 import goorm.code_challenge.global.exception.ErrorCode;
 import goorm.code_challenge.jwt.application.JWTUtil;
+import goorm.code_challenge.jwt.domain.RefreshToken;
 import goorm.code_challenge.jwt.dto.CustomUserDetails;
+import goorm.code_challenge.jwt.repository.RefreshTokenRepository;
 import jakarta.servlet.FilterChain;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
 	private final AuthenticationManager authenticationManager;
+	private final RefreshTokenRepository refreshTokenRepository;
 	private final JWTUtil jwtUtil;
-
-	public LoginFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil) {
-
-		this.authenticationManager = authenticationManager;
-		this.jwtUtil = jwtUtil;
-	}
 
 	@Override
 	public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws
@@ -62,7 +64,6 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
-		System.out.println("username = " + username);
 
 		if (username == null || username.trim().isEmpty()) {
 			try {
@@ -91,20 +92,37 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 	//로그인 성공시 실행하는 메소드 (여기서 JWT를 발급하면 됨)
 	@Override
 	protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
-		Authentication authentication) {
+		Authentication authentication) throws IOException {
 
-		//UserDetailsS
-		CustomUserDetails customUserDetails = (CustomUserDetails)authentication.getPrincipal();
+		//유저 정보
+		String username = authentication.getName();
 
-		String username = customUserDetails.getUsername();
 		Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
 		Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
 		GrantedAuthority auth = iterator.next();
-
 		String role = auth.getAuthority();
 
-		String token = jwtUtil.createJwt(username, role,30 * 60 * 1000L);
-		response.addHeader("Authorization", "Bearer " + token);
+
+		//토큰 생성
+		String access = jwtUtil.createJwt("access", username, role, 30 * 60 * 1000L);
+		String refresh = jwtUtil.createJwt("refresh", username, role, 24*60 * 60 * 1000L);
+
+		addRefreshEntity(username,refresh,24*60 * 60 * 1000L);
+		//응답 설정
+		response.setHeader("access", access);
+		response.addCookie(createCookie("refresh", refresh));
+		response.setStatus(HttpStatus.OK.value());
+		sendErrorResponse(response,ErrorCode.OK,"로그인 되었습니다");
+	}
+	private Cookie createCookie(String key, String value) {
+
+		Cookie cookie = new Cookie(key, value);
+		cookie.setMaxAge(24*60*60);
+		//cookie.setSecure(true);
+		//cookie.setPath("/");
+		cookie.setHttpOnly(true);
+
+		return cookie;
 	}
 
 	//로그인 실패시 실행하는 메소드
@@ -112,6 +130,17 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 	protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response,
 		AuthenticationException failed) throws IOException {
 		sendErrorResponse(response,ErrorCode.UNAUTHORIZED,failed.getLocalizedMessage());
+	}
+	private void addRefreshEntity(String username, String refresh, Long expiredMs) {
+
+		Date date = new Date(System.currentTimeMillis() + expiredMs);
+
+		RefreshToken refreshEntity = new RefreshToken();
+		refreshEntity.setLoginId(username);
+		refreshEntity.setRefresh(refresh);
+		refreshEntity.setExpiration(date.toString());
+
+		refreshTokenRepository.save(refreshEntity);
 	}
 
 	private void sendErrorResponse(HttpServletResponse response, ErrorCode errorCode, String message) throws
