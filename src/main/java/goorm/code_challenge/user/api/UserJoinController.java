@@ -23,7 +23,7 @@ public class UserJoinController extends BaseController {
 	private final UserJoinService service;
 
 	@PostMapping("/join")
-	public ApiResponse<String> join(@Validated @RequestBody UserJoinRequest userJoinRequest,
+	public ApiResponse<Object> join(@Validated @RequestBody UserJoinRequest userJoinRequest,
 		Errors errors) {
 		if (errors.hasErrors()) {
 			for (FieldError error : errors.getFieldErrors()) {
@@ -31,6 +31,7 @@ public class UserJoinController extends BaseController {
 			}
 		}
 		User user = service.joinService(userJoinRequest);
-		return makeAPIResponse("회원가입 성공!");
+		ApiResponse<Object> apiResponse = new ApiResponse<>(ErrorCode.OK.getCode(), "회원 가입 성공");
+		return apiResponse;
 	}
 }
