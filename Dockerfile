@@ -5,10 +5,11 @@ FROM openjdk:17-jdk-slim
 WORKDIR /app
 
 # Copy the built JAR file from the build context into the container
-COPY build/libs/*.jar /app/
+COPY build/libs/*.jar /app/app.jar
 
 # Expose the port the application runs on
 EXPOSE 8080
 
 # Define the command to run the application
-ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom","-jar","/app.jar"]
+ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom","-jar","/app/app.jar"]
+
