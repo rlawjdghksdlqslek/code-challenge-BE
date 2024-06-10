@@ -35,7 +35,7 @@ jobs:
 
       - name: Docker build
         run: |
-          run: echo ${{ secrets.DOCKER_ACCESS_TOKEN }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+          echo ${{ secrets.DOCKER_ACCESS_TOKEN }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
           docker build -t app .
           docker tag app ${{ secrets.DOCKER_USERNAME }}/codechallenge:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/codechallenge:latest
