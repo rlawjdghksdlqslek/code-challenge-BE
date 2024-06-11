@@ -2,6 +2,7 @@ package goorm.code_challenge.jwt.application;
 
 import java.util.Date;
 
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
 
 import goorm.code_challenge.global.exception.CustomException;
@@ -69,7 +70,7 @@ public class ReissueService {
 		String newRefresh = jwtUtil.createJwt("refresh", username, role, 24 * 60 * 60 * 1000L);
 		refreshTokenRepository.deleteByRefresh(refresh);
 		addRefreshEntity(username,newRefresh,24 * 60 * 60 * 1000L);
-		response.addCookie(createCookie("refresh", newRefresh));
+		response.addHeader("Set-Cookie", createCookie("refresh", refresh).toString());
 
 		return jwtUtil.createJwt("access", username, role, 30 * 60 * 1000L);
 
@@ -86,14 +87,14 @@ public class ReissueService {
 		refreshTokenRepository.save(refreshEntity);
 	}
 
-	private Cookie createCookie(String key, String value) {
-
-		Cookie cookie = new Cookie(key, value);
-		cookie.setMaxAge(24 * 60 * 60);
-		//cookie.setSecure(true);
-		//cookie.setPath("/");
-		cookie.setHttpOnly(true);
-
+	private ResponseCookie createCookie(String key, String value) {
+		ResponseCookie cookie = ResponseCookie.from(key, value)
+			.path("/")
+			.sameSite("None")
+			.httpOnly(false)
+			.secure(true)
+			.maxAge(24*60*60)
+			.build();
 		return cookie;
 	}
 
