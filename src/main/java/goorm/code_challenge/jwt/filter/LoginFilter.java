@@ -9,6 +9,7 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -110,18 +111,18 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 		addRefreshEntity(username,refresh,24*60 * 60 * 1000L);
 		//응답 설정
 		response.setHeader("access", access);
-		response.addCookie(createCookie("refresh", refresh));
+		response.addHeader("Set-Cookie", createCookie("refresh", refresh).toString());
 		response.setStatus(HttpStatus.OK.value());
 		sendErrorResponse(response,ErrorCode.OK,"로그인 되었습니다");
 	}
-	private Cookie createCookie(String key, String value) {
-
-		Cookie cookie = new Cookie(key, value);
-		cookie.setMaxAge(24*60*60);
-		//cookie.setSecure(true);
-		//cookie.setPath("/");
-		cookie.setHttpOnly(false);
-
+	private ResponseCookie createCookie(String key, String value) {
+		ResponseCookie cookie = ResponseCookie.from(key, value)
+			.path("/")
+			.sameSite("None")
+			.httpOnly(false)
+			.secure(true)
+            .maxAge(24*60*60)
+			.build();
 		return cookie;
 	}
 
