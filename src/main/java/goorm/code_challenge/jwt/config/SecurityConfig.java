@@ -1,5 +1,6 @@
 package goorm.code_challenge.jwt.config;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 import goorm.code_challenge.jwt.application.JWTUtil;
@@ -68,8 +69,7 @@ public class SecurityConfig {
 						configuration.setAllowedHeaders(Collections.singletonList("*"));
 						configuration.setMaxAge(3600L);
 
-						configuration.setExposedHeaders(Collections.singletonList("Authorization"));
-						configuration.setExposedHeaders(Collections.singletonList("access"));
+						configuration.setExposedHeaders(Arrays.asList("access","Authorization"));
 
 						return configuration;
 					}
