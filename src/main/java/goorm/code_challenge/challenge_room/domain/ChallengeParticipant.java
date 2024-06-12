@@ -31,15 +31,15 @@ public class ChallengeParticipant {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String userStatus; // 유저 대기 상태
+    private ParticipantStatus participantStatus; // 유저 대기 상태
 
     public ChallengeParticipant() {}
 
-    public ChallengeParticipant(ChallengeRoom challengeRoom, User user, boolean isCreator, String userStatus) {
+    public ChallengeParticipant(ChallengeRoom challengeRoom, User user, boolean isCreator, ParticipantStatus participantStatus) {
         this.challengeRoom = challengeRoom;
         this.user = user;
         this.isCreator = isCreator;
-        this.userStatus = userStatus;
+        this.participantStatus = participantStatus;
     }
 
     public boolean isCreator() {
