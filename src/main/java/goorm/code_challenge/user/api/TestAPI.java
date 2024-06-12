@@ -17,9 +17,9 @@ public class TestAPI {
 
 		return "Main Controller : "+userDetails.getUsername();
 	}
-	@RequestMapping("/")
+	@GetMapping("/admin")
 	public String adminP() {
 
-		return "okr";
+		return "admin Controller";
 	}
 }
