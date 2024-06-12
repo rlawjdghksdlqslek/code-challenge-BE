@@ -17,7 +17,13 @@ public class CreateChallengeRoomRequest {
     }
 
     public ChallengeRoom toEntity(User user) {
-        return ChallengeRoom.builder().user(user).roomName(this.roomName).roomDifficulty(this.roomDifficulty).description(this.description).roomStatus(this.roomStatus).build();
+        return ChallengeRoom.builder()
+                .user(user)
+                .roomName(this.roomName)
+                .roomDifficulty(this.roomDifficulty)
+                .description(this.description)
+                .roomStatus(this.roomStatus)
+                .build();
     }
 
 }

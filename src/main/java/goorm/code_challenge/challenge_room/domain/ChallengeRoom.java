@@ -2,16 +2,20 @@ package goorm.code_challenge.challenge_room.domain;
 
 import goorm.code_challenge.user.domain.User;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.DynamicInsert;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(
-        name = "CHALLENGE_ROOM"
-)
+@Table(name = "challenge_room")
+@EntityListeners(AuditingEntityListener.class)
 @DynamicInsert
+@Getter
+@Setter
 public class ChallengeRoom {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,6 +40,14 @@ public class ChallengeRoom {
     @CreatedDate
     private LocalDateTime createdAt;
 
+
+
+    // Constructors and builder pattern
+
+    public ChallengeRoom() {
+
+    }
+
     public ChallengeRoom(String roomName, User user, RoomDifficulty roomDifficulty, String description, RoomStatus roomStatus) {
         this.roomName = roomName;
         this.user = user;
@@ -43,10 +55,6 @@ public class ChallengeRoom {
         this.description = description;
         this.roomStatus = roomStatus;
         this.createdAt = LocalDateTime.now();
-    }
-
-    public ChallengeRoom() {
-
     }
 
     public static ChallengeRoomBuilder builder() {

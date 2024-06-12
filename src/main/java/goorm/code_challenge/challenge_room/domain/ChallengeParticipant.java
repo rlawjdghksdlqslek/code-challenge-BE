@@ -5,24 +5,23 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+@Setter
+@Getter
 @Entity
 @Table(name = "challenge_participants")
 public class ChallengeParticipant {
 
-    @Setter
-    @Getter
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long participantId;
 
-    @Setter
-    @Getter
+
     @ManyToOne
     @JoinColumn(name = "room_id", nullable = false)
     private ChallengeRoom challengeRoom;
 
-    @Setter
-    @Getter
+
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -30,12 +29,9 @@ public class ChallengeParticipant {
     @Column(nullable = false)
     private boolean isCreator;
 
-    @Getter
-    @Setter
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private String userStatus; // 유저 대기 상태
-
-    // Constructors, getters and setters
 
     public ChallengeParticipant() {}
 
@@ -52,6 +48,11 @@ public class ChallengeParticipant {
 
     public void setCreator(boolean creator) {
         isCreator = creator;
+    }
+
+    public enum UserStatus {
+        WAITING,
+        READY
     }
 
 }
