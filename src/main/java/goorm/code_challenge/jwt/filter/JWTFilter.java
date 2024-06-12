@@ -6,6 +6,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -35,10 +36,8 @@ public class JWTFilter extends OncePerRequestFilter {
 		String accessToken = request.getHeader("access");
 
 		// 토큰이 없다면 다음 필터로 넘김
-		if (accessToken == null) {
-
+		if (!StringUtils.hasText(accessToken)) {
 			filterChain.doFilter(request, response);
-
 			return;
 		}
 
@@ -49,7 +48,6 @@ public class JWTFilter extends OncePerRequestFilter {
 
 			sendErrorResponse(response,ErrorCode.UNAUTHORIZED,"만료된 토큰 입니다");
 			//response status code
-			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 			return;
 		}
 
@@ -62,7 +60,6 @@ public class JWTFilter extends OncePerRequestFilter {
 			sendErrorResponse(response,ErrorCode.UNAUTHORIZED,"유효하지 않은 토큰입니다");
 
 			//response status code
-			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 			return;
 		}
 
