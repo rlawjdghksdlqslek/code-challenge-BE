@@ -18,9 +18,10 @@ public class DockerCommand {
 	// }
 	//배포 버전
 	public static List<String> javaCommand(File directory) {
+		String containerDirectory = "/app";
 		return Arrays.asList(
+			"docker", "run", "-i", "--rm", "--privileged", "-d", "docker:dind",
 			"docker", "run", "-i", "--rm",
-			"-v", "/var/run/docker.sock:/var/run/docker.sock",  // Docker 소켓 마운트
 			"-v", "/tmp" + ":/app",
 			"openjdk:17",
 			"java", "-cp", "/app/" + directory.toString().replace("/tmp", ""), "Main"
@@ -61,8 +62,8 @@ public class DockerCommand {
 	//베포버전
 	public static List<String> compileCommand(File sourceFile, String tempDirPath) {
 		return Arrays.asList(
+			"docker", "run", "-i", "--rm", "--privileged", "-d", "docker:dind",
 			"docker", "run", "--rm",
-			"-v", "/var/run/docker.sock:/var/run/docker.sock",  // Docker 소켓 마운트
 			"-v", "/tmp" + "/" + tempDirPath.toString().replace("/tmp", "") + ":/app",
 			"-w", "/app",
 			"openjdk:17",
