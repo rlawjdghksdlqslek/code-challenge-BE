@@ -31,7 +31,7 @@ public class JavaJudge implements JudgeUtil {
 		//컴파일 시작
 		startCompile(file,file.getParentFile());
 
-		delete(file.getParentFile());
+		//delete(file.getParentFile());
 
 	}
 
@@ -69,11 +69,11 @@ public class JavaJudge implements JudgeUtil {
 	}
 
 	private void startCompile(
-		File sourceFile, //원본 파일
-		File tempDir	//tmp 경로
+		File sourceFile, //원본 파일 ex/tmp/UUID/파일이름.java
+		File tempDir	//tmp 경로 ex/tmp/UUID
 	) throws InterruptedException, IOException {
-		final String tempDirPath = tempDir.getAbsolutePath();
-		final Process compileProcess = startDockerCompile(sourceFile, tempDirPath).start();
+		final String tempDirPath = tempDir.getAbsolutePath(); //절대 경로 확인
+		final Process compileProcess = startDockerCompile(sourceFile, tempDirPath).start(); //도커 컴파일 시작
 
 		validateCompile(compileProcess);
 		runTestCases(tempDir);
@@ -92,6 +92,7 @@ public class JavaJudge implements JudgeUtil {
 		}
 	}
 
+	//파일과 디렉토리 경로 받아 컴파일
 	private ProcessBuilder startDockerCompile(File sourceFile, String tempDirPath) {
 		return new ProcessBuilder(compileCommand(sourceFile, tempDirPath));
 	}
