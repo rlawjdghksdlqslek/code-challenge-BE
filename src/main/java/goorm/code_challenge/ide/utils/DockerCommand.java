@@ -6,10 +6,11 @@ import java.util.List;
 
 public class DockerCommand {
 	public static List<String> javaCommand(File directory) {
+		//String hostDirectory = "/tmp";
+		String containerDirectory = "/app";
 		return Arrays.asList(
 			"docker", "run", "-i", "--rm",
-			//"-v", "/Users/cheonseongjun/Desktop/code-challenge/build/tmp" + ":/app", //로컬 버전
-			// //배포버전
+			"-v", "/tmp" + ":/app",
 			"openjdk:17",
 			"java", "-cp", "/app/" + directory.toString().replace("/tmp", ""), "Main"
 		);
@@ -33,10 +34,11 @@ public class DockerCommand {
 		);
 	}
 
+	// 해당 디랙토리 컴파일
 	public static List<String> compileCommand(File sourceFile, String tempDirPath) {
 		return Arrays.asList(
 			"docker", "run", "--rm",
-			"-v", "/home/ec2-user/IdeaProjects/ThinkTank_BE/tmp" + "/" +
+			"-v", "/tmp" + "/" +
 				tempDirPath.toString().replace("/tmp", "") +
 				":/app",
 			"-w", "/app",

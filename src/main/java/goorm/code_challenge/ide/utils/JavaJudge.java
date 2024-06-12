@@ -22,15 +22,22 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class JavaJudge implements JudgeUtil {
 	@Override
-	public void executeCode(String code) throws IOException {
-		//반환 값은 파일의 경로
+	public void executeCode(String code) throws IOException, InterruptedException {
+		//코드 받아서 파일로 생성
 		File file = createFile(code);
-		System.out.println(file.toString());
+		//파일 경로 확인
+		System.out.println(file.getAbsolutePath());
+
+		//컴파일 시작
+		startCompile(file,file.getParentFile());
+
+		delete(file.getParentFile());
 
 	}
 
 	@Override
 	public ProcessBuilder startDockerRun(File tempDir) {
+		System.out.println("실행 전");
 		return new ProcessBuilder(javaCommand(tempDir)).redirectErrorStream(true);
 	}
 
@@ -53,7 +60,6 @@ public class JavaJudge implements JudgeUtil {
 
 			// Main.java 파일 생성 및 내용 작성
 			Files.write(javaFilePath, code.getBytes());
-			System.out.println("Main.java 파일이 생성되었습니다: " + javaFilePath);
 			// 생성된 파일 객체 반환
 			return javaFilePath.toFile();
 
@@ -63,14 +69,14 @@ public class JavaJudge implements JudgeUtil {
 	}
 
 	private void startCompile(
-		File sourceFile,
-		File tempDir
+		File sourceFile, //원본 파일
+		File tempDir	//tmp 경로
 	) throws InterruptedException, IOException {
 		final String tempDirPath = tempDir.getAbsolutePath();
 		final Process compileProcess = startDockerCompile(sourceFile, tempDirPath).start();
 
 		validateCompile(compileProcess);
-		//runTestCases(testCases, tempDir);
+		runTestCases(tempDir);
 		Thread.currentThread().interrupt();
 	}
 

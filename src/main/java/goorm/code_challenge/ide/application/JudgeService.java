@@ -17,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 public class JudgeService {
 	private final UserRepository userRepository;
 
-	public void judge(CodeSubmission dto, UserDetails userDetails) throws IOException {
+	public void judge(CodeSubmission dto, UserDetails userDetails) throws IOException, InterruptedException {
 		final User user = userRepository.findByLoginId(userDetails.getUsername());
 		JudgeUtil judgeUtil = new JavaJudge();
 		judgeUtil.executeCode(dto.getCode());
