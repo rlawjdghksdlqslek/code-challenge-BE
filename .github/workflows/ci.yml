@@ -47,14 +47,19 @@ jobs:
           username: ubuntu
           key: ${{ secrets.PRIVATE_KEY }}
           script: |
+          script: |
             docker pull ${{ secrets.DOCKER_USERNAME }}/codechallenge:latest
             docker stop $(docker ps -a -q)
-            docker run -d --log-driver=syslog -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/codechallenge:latest
-            docker run --privileged --name my-docker -d docker:dind
             exited_containers=$(docker ps --filter 'status=exited' -a -q)
             if [ ! -z "$exited_containers" ]; then
               docker rm $exited_containers
             fi
+            docker run --privileged --name java-docker -d docker:dind
+            docker run --privileged --name python-docker -d docker:dind
+            docker run --privileged --name node-docker -d docker:dind
+            docker run -d --log-driver=syslog -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/codechallenge:latest
+            
+            
             docker image prune -a -f
 
         
