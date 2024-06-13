@@ -47,7 +47,6 @@ jobs:
           username: ubuntu
           key: ${{ secrets.PRIVATE_KEY }}
           script: |
-          script: |
             docker pull ${{ secrets.DOCKER_USERNAME }}/codechallenge:latest
             docker stop $(docker ps -a -q)
             exited_containers=$(docker ps --filter 'status=exited' -a -q)
