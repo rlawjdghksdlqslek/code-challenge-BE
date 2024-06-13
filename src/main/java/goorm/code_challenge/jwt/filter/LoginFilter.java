@@ -34,12 +34,17 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
 	private final AuthenticationManager authenticationManager;
 	private final RefreshTokenRepository refreshTokenRepository;
 	private final JWTUtil jwtUtil;
+	public LoginFilter(AuthenticationManager authenticationManager, RefreshTokenRepository refreshTokenRepository, JWTUtil jwtUtil, String url) {
+		this.authenticationManager = authenticationManager;
+		this.refreshTokenRepository = refreshTokenRepository;
+		this.jwtUtil = jwtUtil;
+		setFilterProcessesUrl(url);
+	}
 
 	@Override
 	public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws

@@ -1,5 +1,7 @@
-package goorm.code_challenge.user.api;
+package goorm.code_challenge.ide.api;
 
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.annotation.Validated;
@@ -8,31 +10,32 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import goorm.code_challenge.global.exception.ApiResponse;
 import goorm.code_challenge.global.exception.BaseController;
 import goorm.code_challenge.global.exception.CustomException;
 import goorm.code_challenge.global.exception.ErrorCode;
-import goorm.code_challenge.global.exception.ApiResponse;
-import goorm.code_challenge.user.application.UserJoinService;
-import goorm.code_challenge.user.domain.User;
-import goorm.code_challenge.user.dto.request.UserJoinRequest;
+import goorm.code_challenge.ide.application.ProblemService;
+import goorm.code_challenge.ide.domain.Problem;
+import goorm.code_challenge.ide.dto.ProblemRequest;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/api")
-public class UserJoinController extends BaseController {
-	private final UserJoinService service;
+@RequiredArgsConstructor
+public class ProblemController extends BaseController {
+	private final ProblemService problemService;
 
-	@PostMapping("/join")
-	public ApiResponse<Object> join(@Validated @RequestBody UserJoinRequest userJoinRequest,
-		Errors errors) {
+	@PostMapping("/problem")
+	public ApiResponse<Problem> create(
+		@AuthenticationPrincipal UserDetails userDetails,
+		@Validated @RequestBody ProblemRequest problemRequest, Errors errors){
 		if (errors.hasErrors()) {
 			for (FieldError error : errors.getFieldErrors()) {
 				throw new CustomException(ErrorCode.BAD_REQUEST, error.getDefaultMessage());
 			}
 		}
-		User user = service.joinService(userJoinRequest);
-		ApiResponse<Object> apiResponse = new ApiResponse<>(ErrorCode.OK.getCode(), "회원 가입 성공");
-		return apiResponse;
+		Problem problem = problemService.createProblem(problemRequest);
+		return makeAPIResponse(problem);
 	}
+
 }
