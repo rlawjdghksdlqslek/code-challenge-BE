@@ -7,28 +7,18 @@ import java.util.List;
 public class DockerCommand {
 
 	//로컬 버전
-	// public static List<String> javaCommand(File directory) {
-	// 	//String hostDirectory = "/tmp";
-	// 	String containerDirectory = "/app";
-	// 	return Arrays.asList(
-	// 		"docker", "run", "-i", "--rm",
-	// 		"-v", "/tmp" + ":/app",
-	// 		"openjdk:17",
-	// 		"java", "-cp", "/app/" + directory.toString().replace("/tmp", ""), "Main"
-	// 	);
-	// }
-	//배포 버전
 	public static List<String> javaCommand(File directory) {
 		//String hostDirectory = "/tmp";
+		String containerDirectory = "/app";
 		return Arrays.asList(
-			"docker", "exec", "-i", "java-docker",
-			//"docker", "run", "-i", "--rm",
+			"docker", "run", "-i", "--rm",
 			"-v", "/tmp" + ":/app",
 			"openjdk:17",
-			"java", "-cp", "/app/" + directory.toString
-				().replace("/tmp", ""), "Main"
+			"java", "-cp", "/app/" + directory.toString().replace("/tmp", ""), "Main"
 		);
 	}
+	//배포 버전
+
 
 
 	public static List<String> javaScriptCommand(File directory) {
@@ -51,22 +41,9 @@ public class DockerCommand {
 
 	// 해당 디랙토리 컴파일
 	// 로컬 버전
-	// public static List<String> compileCommand(File sourceFile, String tempDirPath) {
-	// 	return Arrays.asList(
-	// 		"docker", "run", "--rm",
-	// 		"-v", "/tmp" + "/" +
-	// 			tempDirPath.toString().replace("/tmp", "") +
-	// 			":/app",
-	// 		"-w", "/app",
-	// 		"openjdk:17",
-	// 		"javac", sourceFile.getName()
-	// 	);
-	// }
-	//베포버전
 	public static List<String> compileCommand(File sourceFile, String tempDirPath) {
 		return Arrays.asList(
-			"docker", "exec",  "java-docker",
-			//"docker", "run", "--rm",
+			"docker", "run", "--rm",
 			"-v", "/tmp" + "/" +
 				tempDirPath.toString().replace("/tmp", "") +
 				":/app",
@@ -75,7 +52,6 @@ public class DockerCommand {
 			"javac", sourceFile.getName()
 		);
 	}
-
 
 
 }
