@@ -1,6 +1,7 @@
 package goorm.code_challenge.jwt.api;
 
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import goorm.code_challenge.global.exception.ApiResponse;
@@ -12,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/api")
 public class ReissueController extends BaseController {
 	private final ReissueService reissueService;
 	@PostMapping("/reissue")

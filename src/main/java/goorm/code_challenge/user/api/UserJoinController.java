@@ -19,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/api")
 public class UserJoinController extends BaseController {
 	private final UserJoinService service;
 

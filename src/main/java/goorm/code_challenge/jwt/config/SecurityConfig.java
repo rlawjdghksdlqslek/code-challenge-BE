@@ -86,14 +86,14 @@ public class SecurityConfig {
 
 		http
 			.authorizeHttpRequests((auth) -> auth
-				.requestMatchers("/login", "/", "/join","/reissue").permitAll()
+				.requestMatchers("/api/login", "/", "/api/join","/api/reissue").permitAll()
 				.anyRequest().authenticated());
 		http
 			.addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
 
 		//필터 추가 LoginFilter()는 인자를 받음 (AuthenticationManager() 메소드에 authenticationConfiguration 객체를 넣어야 함) 따라서 등록 필요
 		http
-			.addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration),refreshTokenRepository,jwtUtil),UsernamePasswordAuthenticationFilter.class);
+			.addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration),refreshTokenRepository,jwtUtil,"/api/login"),UsernamePasswordAuthenticationFilter.class);
 		http
 			.addFilterBefore(new CustomLogoutFilter(jwtUtil, refreshTokenRepository), LogoutFilter.class);
 
