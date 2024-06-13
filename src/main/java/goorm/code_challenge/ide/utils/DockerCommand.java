@@ -21,11 +21,12 @@ public class DockerCommand {
 	public static List<String> javaCommand(File directory) {
 		//String hostDirectory = "/tmp";
 		return Arrays.asList(
-			"docker", "exec", "-it", "java-docker",
-			"docker", "run", "-i", "--rm",
+			"docker", "exec", "-i", "java-docker",
+			//"docker", "run", "-i", "--rm",
 			"-v", "/tmp" + ":/app",
 			"openjdk:17",
-			"java", "-cp", "/app/" + directory.toString().replace("/tmp", ""), "Main"
+			"java", "-cp", "/app/" + directory.toString
+				().replace("/tmp", ""), "Main"
 		);
 	}
 
@@ -64,8 +65,8 @@ public class DockerCommand {
 	//베포버전
 	public static List<String> compileCommand(File sourceFile, String tempDirPath) {
 		return Arrays.asList(
-			"docker", "exec", "-it", "java-docker",
-			"docker", "run", "--rm",
+			"docker", "exec",  "java-docker",
+			//"docker", "run", "--rm",
 			"-v", "/tmp" + "/" +
 				tempDirPath.toString().replace("/tmp", "") +
 				":/app",
