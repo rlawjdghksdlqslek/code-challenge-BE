@@ -47,23 +47,14 @@ jobs:
           username: ubuntu
           key: ${{ secrets.PRIVATE_KEY }}
           script: |
-            docker run -v /var/run/docker.sock:/var/run/docker.sock --rm \
-              ${{ secrets.DOCKER_USERNAME }}/codechallenge:latest sh -c "\
-              docker pull ${{ secrets.DOCKER_USERNAME }}/codechallenge:latest && \
-              docker stop \$(docker ps -a -q) && \
-              docker run -d --log-driver=syslog -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/codechallenge:latest && \
-              exited_containers=\$(docker ps --filter 'status=exited' -a -q) && \
-              if [ ! -z \"\$exited_containers\" ]; then docker rm \$exited_containers; fi && \
-              docker image prune -a -f"
-#          script: |
-#            docker pull ${{ secrets.DOCKER_USERNAME }}/codechallenge:latest
-#            docker stop $(docker ps -a -q)
-#            docker run -d --log-driver=syslog -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/codechallenge:latest
-#            exited_containers=$(docker ps --filter 'status=exited' -a -q)
-#            if [ ! -z "$exited_containers" ]; then
-#              docker rm $exited_containers
-#            fi
-#            docker image prune -a -f
+            docker pull ${{ secrets.DOCKER_USERNAME }}/codechallenge:latest
+            docker stop $(docker ps -a -q)
+            docker run -d --log-driver=syslog -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/codechallenge:latest
+            exited_containers=$(docker ps --filter 'status=exited' -a -q)
+            if [ ! -z "$exited_containers" ]; then
+              docker rm $exited_containers
+            fi
+            docker image prune -a -f
 
         
 
