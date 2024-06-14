@@ -1,6 +1,7 @@
 package goorm.code_challenge.ide.dto;
 
 import java.util.List;
+import java.util.Map;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
@@ -18,7 +19,6 @@ public class ProblemRequest {
 
 	private String image;
 
-	private List<String> input;
-
-	private List<String> output;
+	private Map<String,String> testCase;
 }
+

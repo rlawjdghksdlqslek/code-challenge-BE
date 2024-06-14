@@ -1,27 +1,25 @@
 package goorm.code_challenge.ide.dto;
 
-import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonInclude;
-
-import goorm.code_challenge.global.exception.ApiResponse;
-import lombok.AllArgsConstructor;
+import goorm.code_challenge.ide.domain.Problem;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 
 @Getter
 public class ProblemResponse {
-	int wrongCount;
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	List<String> wrongInput;
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	List<String> wrongOutput;
-	public ProblemResponse(int wrongCont){
-		this.wrongCount=wrongCont;
-	}
-	public ProblemResponse(List<String> wrongInput,List<String> wrongOutput){
-		this.wrongCount=wrongOutput.size();
-		this.wrongInput=wrongInput;
-		this.wrongOutput=wrongOutput;
-	}
+	private final Long id;
 
+	private final String title;
+
+	private final String context;
+
+	private final String rank;
+
+	private final String image;
+	public ProblemResponse(Problem problem) {
+		this.id = problem.getId();
+		this.title = problem.getTitle();
+		this.context = problem.getContext();
+		this.rank = problem.getRank();
+		this.image = problem.getImage();
+	}
 }
