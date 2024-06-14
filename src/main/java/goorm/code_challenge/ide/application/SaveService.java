@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.security.core.parameters.P;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -13,10 +12,10 @@ import goorm.code_challenge.global.exception.ErrorCode;
 import goorm.code_challenge.global.utils.FileToString;
 import goorm.code_challenge.ide.domain.Submission;
 import goorm.code_challenge.ide.domain.TestCase;
-import goorm.code_challenge.ide.dto.CodePathDto;
-import goorm.code_challenge.ide.dto.CodeSubmission;
-import goorm.code_challenge.ide.dto.FeedbackRequest;
-import goorm.code_challenge.ide.dto.FeedbackResponse;
+import goorm.code_challenge.ide.dto.reponse.CodePathDto;
+import goorm.code_challenge.ide.dto.reuest.CodeSubmission;
+import goorm.code_challenge.ide.dto.reuest.FeedbackRequest;
+import goorm.code_challenge.ide.dto.reponse.FeedbackResponse;
 import goorm.code_challenge.ide.repository.SubmissionRepository;
 import goorm.code_challenge.ide.repository.TestCaseRepository;
 import goorm.code_challenge.ide.utils.JavaSave;

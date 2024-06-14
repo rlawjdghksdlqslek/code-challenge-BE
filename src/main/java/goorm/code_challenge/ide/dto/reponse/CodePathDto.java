@@ -1,4 +1,4 @@
-package goorm.code_challenge.ide.dto;
+package goorm.code_challenge.ide.dto.reponse;
 
 import lombok.Getter;
 

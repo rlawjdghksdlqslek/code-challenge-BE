@@ -1,21 +1,18 @@
 package goorm.code_challenge.ide.application;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import goorm.code_challenge.global.exception.CustomException;
 import goorm.code_challenge.global.exception.ErrorCode;
 import goorm.code_challenge.ide.domain.TestCase;
-import goorm.code_challenge.ide.dto.CodeSubmission;
+import goorm.code_challenge.ide.dto.reuest.CodeSubmission;
 import goorm.code_challenge.problem.repository.ProblemRepository;
 import goorm.code_challenge.ide.repository.TestCaseRepository;
 import goorm.code_challenge.ide.utils.JavaJudge;
 import goorm.code_challenge.ide.utils.JudgeUtil;
-import goorm.code_challenge.user.domain.User;
 import goorm.code_challenge.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 

@@ -10,15 +10,13 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import goorm.code_challenge.global.exception.CustomException;
 import goorm.code_challenge.global.exception.ErrorCode;
 import goorm.code_challenge.ide.domain.TestCase;
-import goorm.code_challenge.ide.dto.CodePathDto;
+import goorm.code_challenge.ide.dto.reponse.CodePathDto;
 
 public class JavaSave {
 	public CodePathDto saveCode(String code, List<TestCase> testCases)  {
