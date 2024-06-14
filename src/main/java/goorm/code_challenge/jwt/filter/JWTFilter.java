@@ -6,6 +6,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,15 +31,13 @@ public class JWTFilter extends OncePerRequestFilter {
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
-		FilterChain filterChain) throws ServletException, IOException {
+									FilterChain filterChain) throws ServletException, IOException {
 		// 헤더에서 access키에 담긴 토큰을 꺼냄
 		String accessToken = request.getHeader("access");
 
 		// 토큰이 없다면 다음 필터로 넘김
-		if (accessToken == null) {
-
+		if (!StringUtils.hasText(accessToken)) {
 			filterChain.doFilter(request, response);
-
 			return;
 		}
 
@@ -49,7 +48,6 @@ public class JWTFilter extends OncePerRequestFilter {
 
 			sendErrorResponse(response,ErrorCode.UNAUTHORIZED,"만료된 토큰 입니다");
 			//response status code
-			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 			return;
 		}
 
@@ -62,7 +60,6 @@ public class JWTFilter extends OncePerRequestFilter {
 			sendErrorResponse(response,ErrorCode.UNAUTHORIZED,"유효하지 않은 토큰입니다");
 
 			//response status code
-			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 			return;
 		}
 
@@ -82,7 +79,7 @@ public class JWTFilter extends OncePerRequestFilter {
 
 		//스프링 시큐리티 인증 토큰 생성
 		Authentication authToken = new UsernamePasswordAuthenticationToken(customUserDetails, null,
-			customUserDetails.getAuthorities());
+				customUserDetails.getAuthorities());
 		//세션에 사용자 등록
 		SecurityContextHolder.getContext().setAuthentication(authToken);
 
@@ -91,7 +88,7 @@ public class JWTFilter extends OncePerRequestFilter {
 
 	}
 	private void sendErrorResponse(HttpServletResponse response, ErrorCode errorCode, String message) throws
-		IOException {
+			IOException {
 		ApiResponse<Object> apiResponse = new ApiResponse<>(errorCode.getCode(), message);
 		response.setStatus(errorCode.getHttpStatus().value());
 		response.setContentType(MediaType.APPLICATION_JSON_VALUE);
