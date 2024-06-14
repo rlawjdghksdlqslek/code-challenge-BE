@@ -1,6 +1,7 @@
 package goorm.code_challenge.room.api;
 
 import goorm.code_challenge.room.domain.Room;
+import goorm.code_challenge.room.dto.request.CreateRoomRequest;
 import goorm.code_challenge.room.dto.response.RoomDTO;
 import goorm.code_challenge.room.service.RoomService;
 import goorm.code_challenge.user.domain.User;
@@ -21,11 +22,10 @@ public class RoomController {
     private final RoomService roomService;
 
     @PostMapping
-    public ResponseEntity<RoomDTO> createRoom(@Valid @RequestBody RoomDTO roomDTO) {
-        // CreateRoomRequest -> User 객체를 가져와서 Room 엔티티로 변환
+    public ResponseEntity<String> createRoom(@Valid @RequestBody CreateRoomRequest roomRequest) {
         User currentUser = roomService.getCurrentUser(); // User를 가져오는 로직 필요
-        Room createdRoom = roomService.createRoom(roomDTO.toEntity(currentUser));
-        return new ResponseEntity<>(new RoomDTO(createdRoom), HttpStatus.CREATED);  // HTTP 201 Created
+        Room createdRoom = roomService.createRoom(roomRequest.toEntity(currentUser));
+        return new ResponseEntity<>("방이 생성되었습니다.", HttpStatus.CREATED); // HTTP 201 Created
     }
 
     @GetMapping("/{roomId}")
@@ -37,7 +37,6 @@ public class RoomController {
 
     @PutMapping("/{roomId}")
     public ResponseEntity<RoomDTO> updateRoom(@PathVariable("roomId") Long roomId, @Valid @RequestBody RoomDTO updatedRoomDTO) {
-        // RoomDTO -> Room 엔티티로 변환
         User currentUser = roomService.getCurrentUser(); // User를 가져오는 로직 필요
         Room updatedRoom = roomService.updateRoom(roomId, updatedRoomDTO.toEntity(currentUser));
         return new ResponseEntity<>(new RoomDTO(updatedRoom), HttpStatus.OK);  // HTTP 200 OK

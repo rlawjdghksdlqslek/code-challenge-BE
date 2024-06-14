@@ -49,6 +49,7 @@ public class RoomService {
         existingRoom.setDuration(updatedRoom.getDuration());
         existingRoom.setAverageDifficulty(updatedRoom.getAverageDifficulty());
         existingRoom.setDescription(updatedRoom.getDescription());
+        existingRoom.setQuestions(updatedRoom.getQuestions()); // 추가된 필드
 
         validateRoom(existingRoom);
         return roomRepository.save(existingRoom);
@@ -87,6 +88,10 @@ public class RoomService {
 
         if (room.getDescription() != null && room.getDescription().length() > 500) {
             throw new ValidationException("방 설명은 최대 500자까지 가능합니다.");
+        }
+
+        if (room.getQuestions() == null || room.getQuestions().isEmpty()) {
+            throw new ValidationException("적어도 하나의 문제를 선택해야 합니다."); // 추가된 필드 검증
         }
     }
 

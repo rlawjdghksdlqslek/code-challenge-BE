@@ -47,14 +47,19 @@ public class Room {
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CodeEntity> codes;
 
-    // 빌더 패턴을 사용한 생성자
+    @ElementCollection
+    @CollectionTable(name = "room_questions", joinColumns = @JoinColumn(name = "room_id"))
+    @Column(name = "question")
+    private List<String> questions;
+
     @Builder
-    public Room(String roomTitle, int duration, Double averageDifficulty, String description, User host, RoomStatus roomStatus) {
+    public Room(String roomTitle, int duration, Double averageDifficulty, String description, User host, RoomStatus roomStatus, List<String> questions) {
         this.roomTitle = roomTitle;
         this.duration = duration;
         this.averageDifficulty = averageDifficulty;
         this.description = description;
         this.host = host;
         this.roomStatus = roomStatus;
+        this.questions = questions;
     }
 }

@@ -5,8 +5,12 @@ import goorm.code_challenge.room.domain.RoomStatus;
 import goorm.code_challenge.user.domain.User;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
+import lombok.Setter;
+
+import java.util.List;
 
 @Getter
+@Setter
 public class CreateRoomRequest {
 
     @NotBlank(message = "방 제목은 필수 항목입니다.")
@@ -24,6 +28,10 @@ public class CreateRoomRequest {
     @Max(value = 120, message = "풀이 시간은 최대 2시간 이내여야 합니다.")
     private int duration; // 분 단위로 저장
 
+    @NotNull(message = "문제 목록은 필수 항목입니다.")
+    @Size(min = 1, message = "적어도 하나의 문제를 선택해야 합니다.")
+    private List<String> questions; // 추가된 필드
+
     public Room toEntity(User host) {
         return Room.builder()
                 .roomTitle(this.roomTitle)
@@ -32,6 +40,7 @@ public class CreateRoomRequest {
                 .description(this.description)
                 .host(host)
                 .roomStatus(RoomStatus.WAITING)
+                .questions(this.questions)
                 .build();
     }
 }
