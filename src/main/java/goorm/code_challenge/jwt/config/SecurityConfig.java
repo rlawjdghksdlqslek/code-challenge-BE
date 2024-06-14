@@ -63,7 +63,7 @@ public class SecurityConfig {
 					public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
 						CorsConfiguration configuration = new CorsConfiguration();
 
-						configuration.setAllowedOrigins(Collections.singletonList("https://localhost:3000"));
+						configuration.setAllowedOrigins(Arrays.asList("https://localhost:3000","https://localhost:3000/code-editor"));
 						configuration.setAllowedMethods(Collections.singletonList("*"));
 						configuration.setAllowCredentials(true);
 						configuration.setAllowedHeaders(Collections.singletonList("*"));
