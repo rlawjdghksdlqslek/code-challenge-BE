@@ -1,4 +1,4 @@
-package goorm.code_challenge.ide.application;
+package goorm.code_challenge.problem.application;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,11 +9,11 @@ import org.springframework.stereotype.Service;
 
 import goorm.code_challenge.global.exception.CustomException;
 import goorm.code_challenge.global.exception.ErrorCode;
-import goorm.code_challenge.ide.domain.Problem;
+import goorm.code_challenge.problem.domain.Problem;
 import goorm.code_challenge.ide.domain.TestCase;
-import goorm.code_challenge.ide.dto.ProblemRequest;
-import goorm.code_challenge.ide.dto.ProblemResponse;
-import goorm.code_challenge.ide.repository.ProblemRepository;
+import goorm.code_challenge.problem.dto.ProblemRequest;
+import goorm.code_challenge.problem.dto.ProblemResponse;
+import goorm.code_challenge.problem.repository.ProblemRepository;
 import goorm.code_challenge.ide.repository.TestCaseRepository;
 import lombok.RequiredArgsConstructor;
 

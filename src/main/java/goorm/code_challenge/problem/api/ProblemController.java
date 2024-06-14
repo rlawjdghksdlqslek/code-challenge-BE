@@ -1,6 +1,5 @@
-package goorm.code_challenge.ide.api;
+package goorm.code_challenge.problem.api;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -21,11 +20,10 @@ import goorm.code_challenge.global.exception.ApiResponse;
 import goorm.code_challenge.global.exception.BaseController;
 import goorm.code_challenge.global.exception.CustomException;
 import goorm.code_challenge.global.exception.ErrorCode;
-import goorm.code_challenge.ide.application.ProblemService;
-import goorm.code_challenge.ide.domain.Problem;
-import goorm.code_challenge.ide.domain.TestCase;
-import goorm.code_challenge.ide.dto.ProblemRequest;
-import goorm.code_challenge.ide.dto.ProblemResponse;
+import goorm.code_challenge.problem.application.ProblemService;
+import goorm.code_challenge.problem.domain.Problem;
+import goorm.code_challenge.problem.dto.ProblemRequest;
+import goorm.code_challenge.problem.dto.ProblemResponse;
 import lombok.RequiredArgsConstructor;
 
 @RestController

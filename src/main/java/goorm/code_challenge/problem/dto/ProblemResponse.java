@@ -1,7 +1,6 @@
-package goorm.code_challenge.ide.dto;
+package goorm.code_challenge.problem.dto;
 
-import goorm.code_challenge.ide.domain.Problem;
-import jakarta.validation.constraints.NotBlank;
+import goorm.code_challenge.problem.domain.Problem;
 import lombok.Getter;
 
 @Getter

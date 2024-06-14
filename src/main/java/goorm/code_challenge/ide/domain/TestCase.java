@@ -1,5 +1,6 @@
 package goorm.code_challenge.ide.domain;
 
+import goorm.code_challenge.problem.domain.Problem;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
