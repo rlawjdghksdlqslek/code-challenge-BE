@@ -10,9 +10,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,30 +17,29 @@ import java.util.UUID;
 
 import goorm.code_challenge.global.exception.CustomException;
 import goorm.code_challenge.global.exception.ErrorCode;
-import goorm.code_challenge.ide.domain.Problem;
-import goorm.code_challenge.ide.dto.ProblemResponse;
+import goorm.code_challenge.ide.domain.TestCase;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class JavaJudge implements JudgeUtil {
 	@Override
-	public Map<String,String> executeCode(String code, Problem problem)  {
+	public Map<String,String> executeCode(String code, List<TestCase> testCases)  {
 		final String uniqueDirName = UUID.randomUUID().toString();
 		final File directory = new File("/tmp/" + uniqueDirName);
 		validateExist(directory);
 		Map<String,String> wrongCasesMap;
 		//코드 받아서 파일로 생성
 		try {
-			final File sourceFile = createFile(directory, code, problem.getInput().size());
+			final File sourceFile = createFile(directory, code, testCases.size());
 
-			wrongCasesMap = startCompile(sourceFile, problem, directory);
+			wrongCasesMap = startCompile(sourceFile, testCases, directory);
 		} catch (IOException e) {
 			throw new CustomException(ErrorCode.BAD_REQUEST,"잘못된 요청");
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
 			throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR,"시간 초과");
 		} finally {
-			//delete(directory);
+			delete(directory);
 		}
 
 		//delete(file.getParentFile());
@@ -77,7 +73,7 @@ public class JavaJudge implements JudgeUtil {
 
 	private Map<String, String> startCompile(
 		File sourceFile, //원본 파일 ex/tmp/UUID/파일이름.java
-		Problem problem,
+		List<TestCase> testCases,
 		File tempDir	//tmp 경로 ex/tmp/UUID
 
 	) throws InterruptedException, IOException {
@@ -85,7 +81,7 @@ public class JavaJudge implements JudgeUtil {
 		final Process compileProcess = startDockerCompile(sourceFile, tempDirPath).start(); //도커 컴파일 시작
 
 		validateCompile(compileProcess);
-		Map<String, String> wrongCasesMap = runTestCases(problem, tempDir);
+		Map<String, String> wrongCasesMap = runTestCases(testCases, tempDir);
 		Thread.currentThread().interrupt();
 		return wrongCasesMap;
 	}
@@ -100,7 +96,7 @@ public class JavaJudge implements JudgeUtil {
 		return new ProcessBuilder(compileCommand(sourceFile, dirPath));
 	}
 
-	private Map<String, String> runTestCases(Problem problem,File tempDir) throws IOException {
+	private Map<String, String> runTestCases(List<TestCase> testCases,File tempDir) throws IOException {
 		final ProcessBuilder builder = startDockerRun(tempDir);
 		final long startTime = System.currentTimeMillis();
 		final Process process = builder.start();
@@ -108,16 +104,15 @@ public class JavaJudge implements JudgeUtil {
 		final BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
 		Map<String,String> wrongCasesMap = new HashMap<>();
 
-		for (int i = 0; i < 10; i++) {
-			writer.write(problem.getInput().get(i) + "\n");
+		for(TestCase testCase  : testCases){
+			writer.write(testCase.getInput() + "\n");
 			writer.flush();
 			final String output = reader.readLine();
 			final long currentTime = System.currentTimeMillis();
 
 			validateTimeOut(currentTime, startTime);
-			if(!validateJudge(problem.getOutput().get(i), output)){
-				System.out.println(problem.getOutput().get(i)+" 출력확인--------"+output+" 실제 결광");
-				wrongCasesMap.put(problem.getInput().get(i),problem.getOutput().get(i));
+			if(!validateJudge(testCase.getOutput(), output)){
+				wrongCasesMap.put(testCase.getInput(),testCase.getOutput());
 			}
 		}
 		return wrongCasesMap;
@@ -135,6 +130,17 @@ public class JavaJudge implements JudgeUtil {
 			return false;
 		}
 		return true;
+	}
+	private void delete(File directory) {
+		final File[] allContents = directory.listFiles();
+
+		if (allContents != null) {
+			for (File file : allContents) {
+				delete(file);
+			}
+		}
+
+		directory.delete();
 	}
 
 
