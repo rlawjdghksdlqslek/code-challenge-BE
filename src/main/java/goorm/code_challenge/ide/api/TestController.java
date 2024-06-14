@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 import goorm.code_challenge.global.exception.ApiResponse;
 import goorm.code_challenge.global.exception.BaseController;
 import goorm.code_challenge.ide.application.JudgeService;
+import goorm.code_challenge.ide.application.SaveService;
+import goorm.code_challenge.ide.domain.Submission;
 import goorm.code_challenge.ide.dto.CodeSubmission;
 import goorm.code_challenge.ide.dto.WrongResponse;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class TestController extends BaseController {
 	private final JudgeService judgeService;
+	private final SaveService saveService;
 	@PostMapping("/ide")
 	public ApiResponse<WrongResponse> test(@RequestBody @Validated CodeSubmission dto,@AuthenticationPrincipal UserDetails userDetails) throws
 		IOException, InterruptedException {
@@ -32,5 +35,11 @@ public class TestController extends BaseController {
 		}
 		WrongResponse wrongResponse = new WrongResponse(0);
 		return makeAPIResponse(wrongResponse);
+	}
+	@PostMapping("/ide/submit")
+	public ApiResponse<Submission> submit( @Validated @RequestBody CodeSubmission dto,@AuthenticationPrincipal UserDetails userDetails) {
+
+		Submission submission = saveService.saveCode(dto, userDetails);
+		return makeAPIResponse(submission);
 	}
 }
