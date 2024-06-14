@@ -1,4 +1,4 @@
-package goorm.code_challenge.ide.dto;
+package goorm.code_challenge.problem.dto;
 
 import java.util.List;
 import java.util.Map;

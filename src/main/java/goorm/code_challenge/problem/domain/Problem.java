@@ -1,10 +1,11 @@
-package goorm.code_challenge.ide.domain;
+package goorm.code_challenge.problem.domain;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import goorm.code_challenge.ide.domain.TestCase;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
