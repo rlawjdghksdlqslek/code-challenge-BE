@@ -31,7 +31,7 @@ public class JWTFilter extends OncePerRequestFilter {
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
-		FilterChain filterChain) throws ServletException, IOException {
+									FilterChain filterChain) throws ServletException, IOException {
 		// 헤더에서 access키에 담긴 토큰을 꺼냄
 		String accessToken = request.getHeader("access");
 
@@ -79,7 +79,7 @@ public class JWTFilter extends OncePerRequestFilter {
 
 		//스프링 시큐리티 인증 토큰 생성
 		Authentication authToken = new UsernamePasswordAuthenticationToken(customUserDetails, null,
-			customUserDetails.getAuthorities());
+				customUserDetails.getAuthorities());
 		//세션에 사용자 등록
 		SecurityContextHolder.getContext().setAuthentication(authToken);
 
@@ -88,7 +88,7 @@ public class JWTFilter extends OncePerRequestFilter {
 
 	}
 	private void sendErrorResponse(HttpServletResponse response, ErrorCode errorCode, String message) throws
-		IOException {
+			IOException {
 		ApiResponse<Object> apiResponse = new ApiResponse<>(errorCode.getCode(), message);
 		response.setStatus(errorCode.getHttpStatus().value());
 		response.setContentType(MediaType.APPLICATION_JSON_VALUE);
