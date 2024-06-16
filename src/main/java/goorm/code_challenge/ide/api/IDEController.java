@@ -1,5 +1,7 @@
 package goorm.code_challenge.ide.api;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -33,7 +35,7 @@ public class IDEController extends BaseController {
 	private final JudgeService judgeService;
 	private final SaveService saveService;
 	@PostMapping("/code/run")
-	public ApiResponse<WrongResponse> test(@RequestBody @Validated CodeSubmission dto, Errors errors){
+	public ApiResponse<WrongResponse> codeRun(@RequestBody @Validated CodeSubmission dto, Errors errors){
 		validationRequest(errors);
 
 		Map<String, String> judge = judgeService.judge(dto);
@@ -52,11 +54,11 @@ public class IDEController extends BaseController {
 		return makeAPIResponse(submission);
 	}
 	@GetMapping("/code")
-	public ApiResponse<FeedbackResponse> feedback( @Validated @RequestBody FeedbackRequest feedbackRequest,Errors errors) {
+	public ApiResponse<List<FeedbackResponse>> feedback( @Validated @RequestBody FeedbackRequest feedbackRequest,Errors errors) {
 		validationRequest(errors);
-		FeedbackResponse code = saveService.getCode(feedbackRequest);
+		List<FeedbackResponse> code = saveService.getCode(feedbackRequest);
 
-		return makeAPIResponse(code);
+		return makeAPIResponse(Collections.singletonList(code));
 	}
 	public void validationRequest(Errors errors){
 		if (errors.hasErrors()) {
