@@ -2,6 +2,8 @@ package goorm.code_challenge.room.domain;
 
 import goorm.code_challenge.chat.domain.ChatMessage;
 import goorm.code_challenge.codes.domain.CodeEntity;
+import goorm.code_challenge.global.exception.CustomException;
+import goorm.code_challenge.global.exception.ErrorCode;
 import goorm.code_challenge.user.domain.User;
 import jakarta.persistence.*;
 import lombok.Builder;
@@ -9,6 +11,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -52,6 +55,14 @@ public class Room {
     @Column(name = "question")
     private List<String> questions;
 
+    @ManyToMany
+    @JoinTable(
+            name = "room_users",
+            joinColumns = @JoinColumn(name = "room_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private List<User> participants = new ArrayList<>();
+
     @Builder
     public Room(String roomTitle, int duration, Double averageDifficulty, String description, User host, RoomStatus roomStatus, List<String> questions) {
         this.roomTitle = roomTitle;
@@ -61,5 +72,16 @@ public class Room {
         this.host = host;
         this.roomStatus = roomStatus;
         this.questions = questions;
+    }
+
+    public void addParticipant(User user) {
+        if (this.participants.size() >= 8) {
+            throw new CustomException(ErrorCode.BAD_REQUEST, "방에 참여할 수 있는 최대 인원을 초과했습니다.");
+        }
+        this.participants.add(user);
+    }
+
+    public void removeParticipant(User user) {
+        this.participants.remove(user);
     }
 }
