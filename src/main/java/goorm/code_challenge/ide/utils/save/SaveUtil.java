@@ -1,4 +1,4 @@
-package goorm.code_challenge.ide.utils;
+package goorm.code_challenge.ide.utils.save;
 
 import java.util.List;
 

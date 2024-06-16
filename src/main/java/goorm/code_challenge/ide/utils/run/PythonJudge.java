@@ -1,4 +1,4 @@
-package goorm.code_challenge.ide.utils;
+package goorm.code_challenge.ide.utils.run;
 
 import static goorm.code_challenge.ide.utils.DockerCommand.*;
 import static goorm.code_challenge.ide.utils.Template.*;
@@ -6,7 +6,6 @@ import static goorm.code_challenge.ide.utils.Template.*;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -19,8 +18,9 @@ import java.util.UUID;
 import goorm.code_challenge.global.exception.CustomException;
 import goorm.code_challenge.global.exception.ErrorCode;
 import goorm.code_challenge.ide.domain.TestCase;
+import goorm.code_challenge.ide.utils.run.JudgeUtil;
 
-public class PythonJudge implements JudgeUtil{
+public class PythonJudge implements JudgeUtil {
 	@Override
 	public Map<String,String> executeCode(String code, List<TestCase> testCases)  {
 		final String uniqueDirName = UUID.randomUUID().toString();

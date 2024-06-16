@@ -9,11 +9,12 @@ import goorm.code_challenge.global.exception.CustomException;
 import goorm.code_challenge.global.exception.ErrorCode;
 import goorm.code_challenge.ide.domain.TestCase;
 import goorm.code_challenge.ide.dto.reuest.CodeSubmission;
-import goorm.code_challenge.ide.utils.PythonJudge;
+import goorm.code_challenge.ide.utils.run.JavaScriptJudge;
+import goorm.code_challenge.ide.utils.run.PythonJudge;
 import goorm.code_challenge.problem.repository.ProblemRepository;
 import goorm.code_challenge.ide.repository.TestCaseRepository;
 import goorm.code_challenge.ide.utils.run.JavaJudge;
-import goorm.code_challenge.ide.utils.JudgeUtil;
+import goorm.code_challenge.ide.utils.run.JudgeUtil;
 import goorm.code_challenge.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -24,19 +25,18 @@ public class JudgeService {
 	private final ProblemRepository problemRepository;
 	private final TestCaseRepository testCaseRepository;
 
-	public Map<String, String> judge(CodeSubmission dto){
+	public Map<String, String> judge(CodeSubmission dto) {
 		List<TestCase> testCases = testCaseRepository.findAllByProblemId(dto.getProblemId());
 		JudgeUtil judgeUtil;
-		if(testCases.isEmpty()){
-			throw new CustomException(ErrorCode.BAD_REQUEST,"해당 문제를 찾을 수 없습니다.");
+		if (testCases.isEmpty()) {
+			throw new CustomException(ErrorCode.BAD_REQUEST, "해당 문제를 찾을 수 없습니다.");
 		}
-		if(dto.getCompileLanguage().equals("java")){
-			judgeUtil = new JavaJudge();
-		}
-		else if(dto.getCompileLanguage().equals("python")){
-			judgeUtil = new PythonJudge();
-		}
-		else throw  new CustomException(ErrorCode.BAD_REQUEST,"잘못된 언어 선택입니다.");
+		judgeUtil = switch (dto.getCompileLanguage()) {
+			case "java" -> new JavaJudge();
+			case "python" -> new PythonJudge();
+			case "javascript" -> new JavaScriptJudge();
+			default -> throw new CustomException(ErrorCode.BAD_REQUEST, "잘못된 언어 선택입니다.");
+		};
 
 		return judgeUtil.executeCode(dto.getCode(), testCases);
 	}

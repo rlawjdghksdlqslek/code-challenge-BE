@@ -8,7 +8,6 @@ public class DockerCommand {
 
 	//로컬 버전
 	public static List<String> javaCommand(File directory) {
-		//String hostDirectory = "/tmp";
 		String containerDirectory = "/app";
 		return Arrays.asList(
 			"docker", "run", "-i", "--rm",
@@ -20,7 +19,7 @@ public class DockerCommand {
 
 	public static  List<String> pythonCommand(File directory){
 		return Arrays.asList(
-			"docker", "run", "-i", //"--rm",
+			"docker", "run", "-i", "--rm",
 			"-v", "/tmp"+":/app",
 			"python:3.9",
 			"python", "/app/" + directory.toString().replace("/tmp", "")+ "/" +  "script.py"
@@ -31,7 +30,7 @@ public class DockerCommand {
 	public static List<String> javaScriptCommand(File directory) {
 		return Arrays.asList(
 			"docker", "run", "-i", "--rm",
-			"-v", "/home/ec2-user/IdeaProjects/ThinkTank_BE/tmp" + ":/app",
+			"-v", "/tmp" + ":/app",
 			"node:alpine",
 			"node", "/app/" + directory.toString().replace("/tmp", "") + "/" + "script.js"
 		);
