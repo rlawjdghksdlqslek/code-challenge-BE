@@ -1,6 +1,7 @@
 package goorm.code_challenge.ide.application;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -54,19 +55,21 @@ public class SaveService {
 
 		return submission;
 	}
-	public FeedbackResponse getCode(FeedbackRequest feedbackRequest){
+	public List<FeedbackResponse> getCode(FeedbackRequest feedbackRequest){
 		Long room = feedbackRequest.getRoomId();
 		Long problem = feedbackRequest.getProblemId();
-		Long user = feedbackRequest.getUserId();
-		Submission submission = submissionRepository.findByRoomIdAndProblemIdAndUserId(room, problem,user);
-		Optional<User> userName = userRepository.findById(user);
-		if(userName.isEmpty()){
-			throw new CustomException(ErrorCode.BAD_REQUEST,"유저를 찾을 수 없습니다");
-		}
+		List<Submission> submission = submissionRepository.findAllByRoomIdAndProblemId(room, problem);
+		FileToString fileToString = new FileToString();
+		List<FeedbackResponse> feedbackResponses = new ArrayList<>();
 		if(submission==null){
 			throw new CustomException(ErrorCode.BAD_REQUEST,"코드를 찾을 수 없습니다");
 		}
-		FileToString fileToString = new FileToString();
-		return new FeedbackResponse(userName.get().getName(),fileToString.changeFile(submission.getCodePath()));
+		for(Submission sub:submission){
+			Optional<User> user = userRepository.findById(sub.getUserId());
+			if(user.isEmpty()) throw new CustomException(ErrorCode.BAD_REQUEST,"유저를 찾을 수 없습니다");
+			feedbackResponses.add(new FeedbackResponse(user.get().getName(),fileToString.changeFile(sub.getCodePath())));
+		}
+
+		return feedbackResponses;
 	}
 }

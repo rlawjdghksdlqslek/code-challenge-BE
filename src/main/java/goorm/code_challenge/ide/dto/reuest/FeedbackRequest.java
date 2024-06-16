@@ -10,6 +10,4 @@ public class FeedbackRequest {
 	private Long roomId;
 	@NotNull(message = "문제 번호는 필수 입력값입니다")
 	private Long problemId;
-	@NotNull(message = "작성자 번호는 필수 입력값입니다")
-	private Long userId;
 }
