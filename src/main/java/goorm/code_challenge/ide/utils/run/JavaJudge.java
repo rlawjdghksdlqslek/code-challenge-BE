@@ -1,4 +1,4 @@
-package goorm.code_challenge.ide.utils;
+package goorm.code_challenge.ide.utils.run;
 
 import static goorm.code_challenge.ide.utils.DockerCommand.*;
 import static goorm.code_challenge.ide.utils.Template.*;
@@ -10,34 +10,41 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import goorm.code_challenge.global.exception.CustomException;
 import goorm.code_challenge.global.exception.ErrorCode;
 import goorm.code_challenge.ide.domain.TestCase;
-import goorm.code_challenge.ide.dto.reponse.CodePathDto;
+import goorm.code_challenge.ide.utils.JudgeUtil;
+import lombok.extern.slf4j.Slf4j;
 
-public class JavaSave implements SaveUtil{
+@Slf4j
+public class JavaJudge implements JudgeUtil {
 	@Override
-	public CodePathDto saveCode(String code, List<TestCase> testCases)  {
+	public Map<String,String> executeCode(String code, List<TestCase> testCases)  {
 		final String uniqueDirName = UUID.randomUUID().toString();
 		final File directory = new File("/tmp/" + uniqueDirName);
 		validateExist(directory);
-		boolean isSolved=false;
+		Map<String,String> wrongCasesMap;
 		//코드 받아서 파일로 생성
 		try {
 			final File sourceFile = createFile(directory, code, testCases.size());
 
-			isSolved = startCompile(sourceFile, testCases, directory);
+			wrongCasesMap = startCompile(sourceFile, testCases, directory);
 		} catch (IOException e) {
 			throw new CustomException(ErrorCode.BAD_REQUEST,"잘못된 요청");
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
 			throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR,"시간 초과");
+		} finally {
+			delete(directory);
 		}
 
-		return new CodePathDto(isSolved,directory.getAbsolutePath()+"/Main.java");
+		//delete(file.getParentFile());
+		return wrongCasesMap;
 
 	}
 
@@ -47,6 +54,7 @@ public class JavaSave implements SaveUtil{
 		}
 	}
 
+	@Override
 	public ProcessBuilder startDockerRun(File tempDir) {
 		return new ProcessBuilder(javaCommand(tempDir)).redirectErrorStream(true);
 	}
@@ -64,7 +72,7 @@ public class JavaSave implements SaveUtil{
 		return sourceFile;
 	}
 
-	private boolean startCompile(
+	private Map<String, String> startCompile(
 		File sourceFile, //원본 파일 ex/tmp/UUID/파일이름.java
 		List<TestCase> testCases,
 		File tempDir	//tmp 경로 ex/tmp/UUID
@@ -72,30 +80,30 @@ public class JavaSave implements SaveUtil{
 	) throws InterruptedException, IOException {
 		final String tempDirPath = tempDir.getAbsolutePath(); //절대 경로 확인
 		final Process compileProcess = startDockerCompile(sourceFile, tempDirPath).start(); //도커 컴파일 시작
-		boolean  isSolved=isValidateCompile(compileProcess)&&isRunTestCases(testCases, tempDir);
+
+		validateCompile(compileProcess);
+		Map<String, String> wrongCasesMap = runTestCases(testCases, tempDir);
 		Thread.currentThread().interrupt();
-		return isSolved;
+		return wrongCasesMap;
 	}
 
-	private boolean isValidateCompile(Process compileProcess) throws InterruptedException {
+	private void validateCompile(Process compileProcess) throws InterruptedException {
 		if (compileProcess.waitFor() != 0) {
-			return false;
+			throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR, "컴파일 오류");
 		}
-		return true;
 	}
 
 	private ProcessBuilder startDockerCompile(File sourceFile, String dirPath) {
 		return new ProcessBuilder(compileCommand(sourceFile, dirPath));
 	}
 
-	private boolean isRunTestCases(List<TestCase> testCases,File tempDir) throws IOException {
+	private Map<String, String> runTestCases(List<TestCase> testCases,File tempDir) throws IOException {
 		final ProcessBuilder builder = startDockerRun(tempDir);
 		final long startTime = System.currentTimeMillis();
 		final Process process = builder.start();
 		final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
 		final BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-		boolean isSolved=true;
-		boolean isNotTimeOut=true;
+		Map<String,String> wrongCasesMap = new HashMap<>();
 
 		for(TestCase testCase  : testCases){
 			writer.write(testCase.getInput() + "\n");
@@ -103,26 +111,38 @@ public class JavaSave implements SaveUtil{
 			final String output = reader.readLine();
 			final long currentTime = System.currentTimeMillis();
 
-			isNotTimeOut=isValidateTimeOut(currentTime, startTime);
+			validateTimeOut(currentTime, startTime);
 			if(!validateJudge(testCase.getOutput(), output)){
-				isSolved=false;
+				wrongCasesMap.put(testCase.getInput(),testCase.getOutput());
 			}
 		}
-		return isSolved&&isNotTimeOut;
+		return wrongCasesMap;
 	}
 
 
-	private static boolean isValidateTimeOut(long currentTime, long startTime) {
+	private static void validateTimeOut(long currentTime, long startTime) {
 		if (currentTime - startTime > 15000) {
-			return false;
+			throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR,"시간 초과");
 		}
-		return true;
 	}
 
-	private static boolean validateJudge(String testCase, String output) {
+	private static Boolean validateJudge(String testCase, String output) {
 		if (!output.equals(testCase)) {
 			return false;
 		}
 		return true;
 	}
+	private void delete(File directory) {
+		final File[] allContents = directory.listFiles();
+
+		if (allContents != null) {
+			for (File file : allContents) {
+				delete(file);
+			}
+		}
+
+		directory.delete();
+	}
+
+
 }

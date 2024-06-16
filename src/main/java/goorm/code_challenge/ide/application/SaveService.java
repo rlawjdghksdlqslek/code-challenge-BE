@@ -20,6 +20,8 @@ import goorm.code_challenge.ide.dto.reponse.FeedbackResponse;
 import goorm.code_challenge.ide.repository.SubmissionRepository;
 import goorm.code_challenge.ide.repository.TestCaseRepository;
 import goorm.code_challenge.ide.utils.JavaSave;
+import goorm.code_challenge.ide.utils.PythonSave;
+import goorm.code_challenge.ide.utils.SaveUtil;
 import goorm.code_challenge.user.domain.User;
 import goorm.code_challenge.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -41,9 +43,12 @@ public class SaveService {
 		if(checkExists!=null){
 			throw new CustomException(ErrorCode.BAD_REQUEST,"제출은 한번만 가능합니다");
 		}
+		SaveUtil save;
+		if(dto.getCompileLanguage().equals("java")) save = new JavaSave();
+		else if (dto.getCompileLanguage().equals("python")) save = new PythonSave();
+		else throw new CustomException(ErrorCode.BAD_REQUEST,"잘못된 언어 선택 입니다.");
 
-		JavaSave javaSave = new JavaSave();
-		CodePathDto codePathDto = javaSave.saveCode(dto.getCode(), testCases);
+		CodePathDto codePathDto = save.saveCode(dto.getCode(), testCases);
 		Submission submission = new Submission();
 		submission.setUserId(user.getId());
 		submission.setRoomId(dto.getRoomId());

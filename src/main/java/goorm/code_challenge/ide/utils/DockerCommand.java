@@ -17,8 +17,15 @@ public class DockerCommand {
 			"java", "-cp", "/app/" + directory.toString().replace("/tmp", ""), "Main"
 		);
 	}
-	//배포 버전
 
+	public static  List<String> pythonCommand(File directory){
+		return Arrays.asList(
+			"docker", "run", "-i", //"--rm",
+			"-v", "/tmp"+":/app",
+			"python:3.9",
+			"python", "/app/" + directory.toString().replace("/tmp", "")+ "/" +  "script.py"
+		);
+	}
 
 
 	public static List<String> javaScriptCommand(File directory) {
@@ -30,14 +37,6 @@ public class DockerCommand {
 		);
 	}
 
-	public static List<String> pythonCommand(File directory) {
-		return Arrays.asList(
-			"docker", "run", "-i", "--rm",
-			"-v", "/home/ec2-user/IdeaProjects/ThinkTank_BE/tmp" + ":/app",
-			"python:3",
-			"python", "/app/" + directory.toString().replace("/tmp", "") + "/" + "script.py"
-		);
-	}
 
 	// 해당 디랙토리 컴파일
 	// 로컬 버전
