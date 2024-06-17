@@ -29,18 +29,18 @@ public class RoomService {
     @Transactional
     public Room createRoom(Room room) {
         room.setRoomStatus(RoomStatus.WAITING);
-
-        // 방 생성 시 호스트를 참가자로 추가
-        User host = room.getHost();
-        room.getParticipants().add(host);
-
-        return roomRepository.save(room);
+        Room createdRoom = roomRepository.save(room);
+        // 방 생성시 호스트도 자동으로 참여하도록 설정
+        createdRoom.addParticipant(room.getHost());
+        return createdRoom;
     }
 
     @Transactional(readOnly = true)
     public Room getRoom(Long roomId) {
-        return roomRepository.findById(roomId)
+        Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new RoomNotFoundException("해당 방을 찾을 수 없습니다."));
+        room.updateRoomStatus(); // 방 상태 업데이트
+        return room;
     }
 
     @Transactional
@@ -89,7 +89,7 @@ public class RoomService {
         }
 
         User currentUser = getCurrentUser();
-        room.getParticipants().add(currentUser);
+        room.addParticipant(currentUser); // 상태 업데이트 포함
         roomRepository.save(room);
     }
 
@@ -99,7 +99,7 @@ public class RoomService {
                 .orElseThrow(() -> new RoomNotFoundException("해당 방을 찾을 수 없습니다."));
 
         User currentUser = getCurrentUser();
-        room.getParticipants().remove(currentUser);
+        room.removeParticipant(currentUser); // 상태 업데이트 포함
 
         if (room.getParticipants().isEmpty()) {
             roomRepository.delete(room);

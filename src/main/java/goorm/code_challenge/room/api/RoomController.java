@@ -70,7 +70,7 @@ public class RoomController {
     public ResponseEntity<String> joinRoom(@PathVariable("roomId") Long roomId) {
         try {
             roomService.addUserToRoom(roomId);
-            return ResponseEntity.ok("참가 성공");
+            return ResponseEntity.ok("참가 완료");
         } catch (RoomFullException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("방이 가득 찼습니다.");
         } catch (RoomNotFoundException e) {
@@ -84,7 +84,7 @@ public class RoomController {
     public ResponseEntity<String> leaveRoom(@PathVariable("roomId") Long roomId) {
         try {
             roomService.removeUserFromRoom(roomId);
-            return ResponseEntity.ok("나가기 성공");
+            return ResponseEntity.ok("퇴장 완료");
         } catch (RoomNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("해당 방을 찾을 수 없습니다.");
         } catch (Exception e) {

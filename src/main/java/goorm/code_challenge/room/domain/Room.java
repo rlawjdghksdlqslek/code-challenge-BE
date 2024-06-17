@@ -74,14 +74,25 @@ public class Room {
         this.questions = questions;
     }
 
+    // 참가자 수에 따라 방 상태 업데이트
+    public void updateRoomStatus() {
+        if (this.participants.size() >= 8) {
+            this.roomStatus = RoomStatus.FULL;
+        } else {
+            this.roomStatus = RoomStatus.WAITING;
+        }
+    }
+
     public void addParticipant(User user) {
         if (this.participants.size() >= 8) {
             throw new CustomException(ErrorCode.BAD_REQUEST, "방에 참여할 수 있는 최대 인원을 초과했습니다.");
         }
         this.participants.add(user);
+        updateRoomStatus(); // 상태 업데이트
     }
 
     public void removeParticipant(User user) {
         this.participants.remove(user);
+        updateRoomStatus(); // 상태 업데이트
     }
 }
