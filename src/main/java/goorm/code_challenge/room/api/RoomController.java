@@ -1,5 +1,7 @@
 package goorm.code_challenge.room.api;
 
+import goorm.code_challenge.global.exception.CustomException;
+import goorm.code_challenge.global.exception.ErrorCode;
 import goorm.code_challenge.room.domain.Room;
 import goorm.code_challenge.room.dto.request.CreateRoomRequest;
 import goorm.code_challenge.room.dto.response.RoomDTO;
@@ -9,6 +11,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.Errors;
+import org.springframework.validation.FieldError;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,7 +27,12 @@ public class RoomController {
     private final RoomService roomService;
 
     @PostMapping
-    public ResponseEntity<String> createRoom(@Valid @RequestBody CreateRoomRequest roomRequest) {
+    public ResponseEntity<String> createRoom(@Validated @RequestBody CreateRoomRequest roomRequest, Errors errors) {
+        if (errors.hasErrors()) {
+            for (FieldError error : errors.getFieldErrors()) {
+                throw new CustomException(ErrorCode.BAD_REQUEST, error.getDefaultMessage());
+            }
+        }
         User currentUser = roomService.getCurrentUser();
         Room createdRoom = roomService.createRoom(roomRequest.toEntity(currentUser));
         return new ResponseEntity<>("방이 생성되었습니다.", HttpStatus.CREATED);
@@ -36,7 +46,12 @@ public class RoomController {
     }
 
     @PutMapping("/{roomId}")
-    public ResponseEntity<RoomDTO> updateRoom(@PathVariable("roomId") Long roomId, @Valid @RequestBody RoomDTO updatedRoomDTO) {
+    public ResponseEntity<RoomDTO> updateRoom(@PathVariable("roomId") Long roomId, @Validated @RequestBody RoomDTO updatedRoomDTO,Errors errors) {
+        if (errors.hasErrors()) {
+            for (FieldError error : errors.getFieldErrors()) {
+                throw new CustomException(ErrorCode.BAD_REQUEST, error.getDefaultMessage());
+            }
+        }
         User currentUser = roomService.getCurrentUser();
         Room updatedRoom = roomService.updateRoom(roomId, updatedRoomDTO.toEntity(currentUser));
         return new ResponseEntity<>(new RoomDTO(updatedRoom), HttpStatus.OK);
