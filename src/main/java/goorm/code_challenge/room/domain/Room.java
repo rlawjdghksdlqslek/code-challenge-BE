@@ -55,13 +55,8 @@ public class Room {
     @Column(name = "question")
     private List<String> questions;
 
-    @ManyToMany
-    @JoinTable(
-            name = "room_users",
-            joinColumns = @JoinColumn(name = "room_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id")
-    )
-    private List<User> participants = new ArrayList<>();
+    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Participant> participants = new ArrayList<>();
 
     @Builder
     public Room(String roomTitle, int duration, Double averageDifficulty, String description, User host, RoomStatus roomStatus, List<String> questions) {
@@ -74,14 +69,39 @@ public class Room {
         this.questions = questions;
     }
 
+    // 참가자 수에 따라 방 상태 업데이트
+    public void updateRoomStatus() {
+        if (this.participants.size() >= 8) {
+            this.roomStatus = RoomStatus.FULL;
+        } else {
+            this.roomStatus = RoomStatus.WAITING;
+        }
+    }
+
     public void addParticipant(User user) {
         if (this.participants.size() >= 8) {
             throw new CustomException(ErrorCode.BAD_REQUEST, "방에 참여할 수 있는 최대 인원을 초과했습니다.");
         }
-        this.participants.add(user);
+        this.participants.add(new Participant(this, user));
+        updateRoomStatus(); // 상태 업데이트
     }
 
     public void removeParticipant(User user) {
-        this.participants.remove(user);
+        this.participants.removeIf(p -> p.getUser().equals(user));
+        updateRoomStatus(); // 상태 업데이트
+    }
+
+    // 참가자 상태 변경
+    public void updateParticipantStatus(User user, ParticipantStatus status) {
+        this.participants.stream()
+                .filter(p -> p.getUser().equals(user))
+                .findFirst()
+                .ifPresent(p -> p.setStatus(status));
+    }
+
+    // 모든 참가자가 준비되었는지 확인
+    public boolean allParticipantsReady() {
+        return this.participants.stream()
+                .allMatch(p -> p.getStatus() == ParticipantStatus.READY);
     }
 }

@@ -1,20 +1,23 @@
 package goorm.code_challenge.room.service;
 
+import goorm.code_challenge.room.domain.Participant;
+import goorm.code_challenge.room.domain.ParticipantStatus;
+import goorm.code_challenge.room.domain.Room;
+import goorm.code_challenge.room.domain.RoomStatus;
+import goorm.code_challenge.room.dto.response.ParticipantInfo;
+import goorm.code_challenge.room.repository.RoomRepository;
+import goorm.code_challenge.user.domain.User;
+import goorm.code_challenge.user.repository.UserRepository;
 import goorm.code_challenge.global.exception.CustomException;
 import goorm.code_challenge.global.exception.ErrorCode;
 import goorm.code_challenge.room.api.RoomFullException;
 import goorm.code_challenge.room.api.RoomNotFoundException;
-import goorm.code_challenge.room.domain.Room;
-import goorm.code_challenge.room.domain.RoomStatus;
-import goorm.code_challenge.room.repository.RoomRepository;
-import goorm.code_challenge.user.domain.User;
-import goorm.code_challenge.user.repository.UserRepository;
 import jakarta.validation.ValidationException;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,13 +32,18 @@ public class RoomService {
     @Transactional
     public Room createRoom(Room room) {
         room.setRoomStatus(RoomStatus.WAITING);
-        return roomRepository.save(room);
+        Room createdRoom = roomRepository.save(room);
+        // 방 생성시 호스트도 자동으로 참여하도록 설정
+        createdRoom.addParticipant(room.getHost());
+        return createdRoom;
     }
 
     @Transactional(readOnly = true)
     public Room getRoom(Long roomId) {
-        return roomRepository.findById(roomId)
+        Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new RoomNotFoundException("해당 방을 찾을 수 없습니다."));
+        room.updateRoomStatus(); // 방 상태 업데이트
+        return room;
     }
 
     @Transactional
@@ -84,7 +92,7 @@ public class RoomService {
         }
 
         User currentUser = getCurrentUser();
-        room.getParticipants().add(currentUser);
+        room.addParticipant(currentUser); // 상태 업데이트 포함
         roomRepository.save(room);
     }
 
@@ -94,7 +102,7 @@ public class RoomService {
                 .orElseThrow(() -> new RoomNotFoundException("해당 방을 찾을 수 없습니다."));
 
         User currentUser = getCurrentUser();
-        room.getParticipants().remove(currentUser);
+        room.removeParticipant(currentUser); // 상태 업데이트 포함
 
         if (room.getParticipants().isEmpty()) {
             roomRepository.delete(room);
@@ -104,12 +112,12 @@ public class RoomService {
     }
 
     @Transactional(readOnly = true)
-    public List<String> getRoomParticipants(Long roomId) {
+    public List<ParticipantInfo> getRoomParticipants(Long roomId) {
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new RoomNotFoundException("해당 방을 찾을 수 없습니다."));
 
         return room.getParticipants().stream()
-                .map(User::getLoginId)
+                .map(participant -> new ParticipantInfo(participant.getUser().getLoginId(), participant.getStatus().name()))
                 .collect(Collectors.toList());
     }
 
@@ -145,5 +153,38 @@ public class RoomService {
         }
 
         return currentUser;
+    }
+
+    @Transactional
+    public void updateParticipantStatus(Long roomId, Long userId, ParticipantStatus status) {
+        Room room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new CustomException(ErrorCode.BAD_REQUEST, "해당 방을 찾을 수 없습니다."));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.BAD_REQUEST, "해당 사용자를 찾을 수 없습니다."));
+
+        room.updateParticipantStatus(user, status);
+        roomRepository.save(room);
+    }
+
+    @Transactional
+    public String startRoom(Long roomId, User currentUser) {
+        Room room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new CustomException(ErrorCode.BAD_REQUEST, "해당 방을 찾을 수 없습니다."));
+
+        if (!room.getHost().getId().equals(currentUser.getId())) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED, "방장만 방을 시작할 수 있습니다.");
+        }
+
+        if (room.getParticipants().size() < 2) {
+            throw new CustomException(ErrorCode.BAD_REQUEST, "방을 시작하기 위해 최소 2명(방장 포함)이 필요합니다.");
+        }
+
+        if (room.allParticipantsReady()) {
+            room.setRoomStatus(RoomStatus.ONGOING);
+            roomRepository.save(room);
+            return "방이 시작되었습니다.";
+        } else {
+            return "모든 참가자가 준비되지 않았습니다.";
+        }
     }
 }
