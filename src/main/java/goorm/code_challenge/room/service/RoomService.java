@@ -1,20 +1,20 @@
 package goorm.code_challenge.room.service;
 
-import goorm.code_challenge.global.exception.CustomException;
-import goorm.code_challenge.global.exception.ErrorCode;
-import goorm.code_challenge.room.api.RoomFullException;
-import goorm.code_challenge.room.api.RoomNotFoundException;
 import goorm.code_challenge.room.domain.Room;
 import goorm.code_challenge.room.domain.RoomStatus;
 import goorm.code_challenge.room.repository.RoomRepository;
 import goorm.code_challenge.user.domain.User;
 import goorm.code_challenge.user.repository.UserRepository;
+import goorm.code_challenge.global.exception.CustomException;
+import goorm.code_challenge.global.exception.ErrorCode;
+import goorm.code_challenge.room.api.RoomFullException;
+import goorm.code_challenge.room.api.RoomNotFoundException;
 import jakarta.validation.ValidationException;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,6 +29,11 @@ public class RoomService {
     @Transactional
     public Room createRoom(Room room) {
         room.setRoomStatus(RoomStatus.WAITING);
+
+        // 방 생성 시 호스트를 참가자로 추가
+        User host = room.getHost();
+        room.getParticipants().add(host);
+
         return roomRepository.save(room);
     }
 

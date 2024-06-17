@@ -1,21 +1,23 @@
 package goorm.code_challenge.room.api;
 
+import goorm.code_challenge.global.exception.CustomException;
+import goorm.code_challenge.global.exception.ErrorCode;
 import goorm.code_challenge.room.domain.Room;
 import goorm.code_challenge.room.dto.request.CreateRoomRequest;
 import goorm.code_challenge.room.dto.response.RoomDTO;
 import goorm.code_challenge.room.service.RoomService;
 import goorm.code_challenge.user.domain.User;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/rooms")
+@RequestMapping("/api/rooms")
 @RequiredArgsConstructor
 public class RoomController {
 
@@ -44,8 +46,15 @@ public class RoomController {
 
     @DeleteMapping("/{roomId}")
     public ResponseEntity<String> deleteRoom(@PathVariable("roomId") Long roomId) {
-        roomService.deleteRoom(roomId);
-        return new ResponseEntity<>("방이 삭제되었습니다.", HttpStatus.OK);
+        try {
+            roomService.deleteRoom(roomId);
+            return new ResponseEntity<>("방이 삭제되었습니다.", HttpStatus.OK);
+        } catch (CustomException e) {
+            if (e.getErrorCode() == ErrorCode.UNAUTHORIZED) {
+                return new ResponseEntity<>(e.GetMessage(), HttpStatus.UNAUTHORIZED);
+            }
+            return new ResponseEntity<>(e.GetMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @GetMapping
