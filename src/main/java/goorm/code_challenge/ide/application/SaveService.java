@@ -19,7 +19,10 @@ import goorm.code_challenge.ide.dto.reuest.FeedbackRequest;
 import goorm.code_challenge.ide.dto.reponse.FeedbackResponse;
 import goorm.code_challenge.ide.repository.SubmissionRepository;
 import goorm.code_challenge.ide.repository.TestCaseRepository;
-import goorm.code_challenge.ide.utils.JavaSave;
+import goorm.code_challenge.ide.utils.save.JavaScriptSave;
+import goorm.code_challenge.ide.utils.save.JavaSave;
+import goorm.code_challenge.ide.utils.save.PythonSave;
+import goorm.code_challenge.ide.utils.save.SaveUtil;
 import goorm.code_challenge.user.domain.User;
 import goorm.code_challenge.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,20 +33,26 @@ public class SaveService {
 	private final UserRepository userRepository;
 	private final SubmissionRepository submissionRepository;
 	private final TestCaseRepository testCaseRepository;
-	public Submission saveCode(CodeSubmission dto, UserDetails userDetails){
+
+	public Submission saveCode(CodeSubmission dto, UserDetails userDetails) {
 		final User user = userRepository.findByLoginId(userDetails.getUsername());
 		List<TestCase> testCases = testCaseRepository.findAllByProblemId(dto.getProblemId());
-		if(testCases.isEmpty()){
-			throw new CustomException(ErrorCode.BAD_REQUEST,"해당 문제를 찾을 수 없습니다.");
+		if (testCases.isEmpty()) {
+			throw new CustomException(ErrorCode.BAD_REQUEST, "해당 문제를 찾을 수 없습니다.");
 		}
 		Submission checkExists = submissionRepository.findByRoomIdAndProblemIdAndUserId(
 			dto.getRoomId(), dto.getProblemId(), user.getId());
-		if(checkExists!=null){
-			throw new CustomException(ErrorCode.BAD_REQUEST,"제출은 한번만 가능합니다");
+		if (checkExists != null) {
+			throw new CustomException(ErrorCode.BAD_REQUEST, "제출은 한번만 가능합니다");
 		}
+		SaveUtil save = switch (dto.getCompileLanguage()) {
+			case "java" -> new JavaSave();
+			case "python" -> new PythonSave();
+			case "javascript" -> new JavaScriptSave();
+			default -> throw new CustomException(ErrorCode.BAD_REQUEST, "잘못된 언어 선택 입니다.");
+		};
 
-		JavaSave javaSave = new JavaSave();
-		CodePathDto codePathDto = javaSave.saveCode(dto.getCode(), testCases);
+		CodePathDto codePathDto = save.saveCode(dto.getCode(), testCases);
 		Submission submission = new Submission();
 		submission.setUserId(user.getId());
 		submission.setRoomId(dto.getRoomId());
@@ -53,21 +62,29 @@ public class SaveService {
 		submission.setSubmitTime(LocalDateTime.now());
 		submissionRepository.save(submission);
 
+		if(codePathDto.isSolved()){
+			user.setExpPoints(user.getExpPoints() + 20);
+			userRepository.save(user);
+		}
+
 		return submission;
 	}
-	public List<FeedbackResponse> getCode(FeedbackRequest feedbackRequest){
+
+	public List<FeedbackResponse> getCode(FeedbackRequest feedbackRequest) {
 		Long room = feedbackRequest.getRoomId();
 		Long problem = feedbackRequest.getProblemId();
 		List<Submission> submission = submissionRepository.findAllByRoomIdAndProblemId(room, problem);
 		FileToString fileToString = new FileToString();
 		List<FeedbackResponse> feedbackResponses = new ArrayList<>();
-		if(submission==null){
-			throw new CustomException(ErrorCode.BAD_REQUEST,"코드를 찾을 수 없습니다");
+		if (submission == null) {
+			throw new CustomException(ErrorCode.BAD_REQUEST, "코드를 찾을 수 없습니다");
 		}
-		for(Submission sub:submission){
+		for (Submission sub : submission) {
 			Optional<User> user = userRepository.findById(sub.getUserId());
-			if(user.isEmpty()) throw new CustomException(ErrorCode.BAD_REQUEST,"유저를 찾을 수 없습니다");
-			feedbackResponses.add(new FeedbackResponse(user.get().getName(),fileToString.changeFile(sub.getCodePath())));
+			if (user.isEmpty())
+				throw new CustomException(ErrorCode.BAD_REQUEST, "유저를 찾을 수 없습니다");
+			feedbackResponses.add(
+				new FeedbackResponse(user.get().getName(), fileToString.changeFile(sub.getCodePath())));
 		}
 
 		return feedbackResponses;

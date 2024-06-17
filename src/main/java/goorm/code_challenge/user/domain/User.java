@@ -1,5 +1,7 @@
 package goorm.code_challenge.user.domain;
 
+import java.math.BigDecimal;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import jakarta.persistence.Column;
@@ -39,7 +41,20 @@ public class User {
 
 	private String profileImage;
 
+	private int expPoints=0;
+
 	private String role;
+
+	public int getLevel(){
+		return (this.expPoints/200+1);
+	}
+	public float getExtraExpPoints(){
+		int extra=expPoints%200;
+		BigDecimal extraDecimal = new BigDecimal(extra);
+		BigDecimal divisor = new BigDecimal(200);
+		BigDecimal result = extraDecimal.divide(divisor, 2, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(100));
+		return result.floatValue();
+	}
 
 	public void passwordEncode(PasswordEncoder passwordEncoder) {
 		this.password = passwordEncoder.encode(this.password);
