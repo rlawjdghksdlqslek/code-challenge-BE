@@ -62,6 +62,11 @@ public class SaveService {
 		submission.setSubmitTime(LocalDateTime.now());
 		submissionRepository.save(submission);
 
+		if(codePathDto.isSolved()){
+			user.setExpPoints(user.getExpPoints() + 20);
+			userRepository.save(user);
+		}
+
 		return submission;
 	}
 

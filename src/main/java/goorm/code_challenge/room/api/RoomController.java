@@ -1,13 +1,16 @@
 package goorm.code_challenge.room.api;
 
+import goorm.code_challenge.global.exception.ApiResponse;
+import goorm.code_challenge.global.exception.BaseController;
 import goorm.code_challenge.global.exception.CustomException;
 import goorm.code_challenge.global.exception.ErrorCode;
 import goorm.code_challenge.room.domain.Room;
 import goorm.code_challenge.room.dto.request.CreateRoomRequest;
 import goorm.code_challenge.room.dto.response.RoomDTO;
+import goorm.code_challenge.room.dto.response.ScoreDTO;
 import goorm.code_challenge.room.service.RoomService;
+import goorm.code_challenge.room.service.ScoreService;
 import goorm.code_challenge.user.domain.User;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,15 +19,17 @@ import org.springframework.validation.FieldError;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/rooms")
 @RequiredArgsConstructor
-public class RoomController {
+public class RoomController extends BaseController {
 
     private final RoomService roomService;
+    private final ScoreService scoreService;
 
     @PostMapping
     public ResponseEntity<String> createRoom(@Validated @RequestBody CreateRoomRequest roomRequest, Errors errors) {
@@ -106,5 +111,10 @@ public class RoomController {
         } catch (RoomNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
+    }
+    @GetMapping("/{roomId}/score")
+    public ApiResponse<List<ScoreDTO>> getRoomScore(@PathVariable("roomId") Long roomId, @RequestParam("problemId") Long problemId) {
+        List<ScoreDTO> roundScore = scoreService.getRoundScore(roomId, problemId);
+        return makeAPIResponse(Collections.singletonList(roundScore));
     }
 }
