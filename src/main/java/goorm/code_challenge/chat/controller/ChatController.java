@@ -9,6 +9,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 @Controller
 @RequiredArgsConstructor
 public class ChatController {
@@ -23,6 +26,10 @@ public class ChatController {
             String username = authentication.getName(); // 로그인한 사용자의 이름
             messageDto.setSender(username);
         }
+
+        // 타임스탬프 설정
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        messageDto.setTimestamp(LocalDateTime.now().format(formatter));
 
         template.convertAndSend("/sub/" + roomId, messageDto);
     }
