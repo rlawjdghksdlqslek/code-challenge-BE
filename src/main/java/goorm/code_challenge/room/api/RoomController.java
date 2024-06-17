@@ -2,8 +2,10 @@ package goorm.code_challenge.room.api;
 
 import goorm.code_challenge.global.exception.CustomException;
 import goorm.code_challenge.global.exception.ErrorCode;
+import goorm.code_challenge.room.domain.ParticipantStatus;
 import goorm.code_challenge.room.domain.Room;
 import goorm.code_challenge.room.dto.request.CreateRoomRequest;
+import goorm.code_challenge.room.dto.response.ParticipantInfo;
 import goorm.code_challenge.room.dto.response.RoomDTO;
 import goorm.code_challenge.room.service.RoomService;
 import goorm.code_challenge.user.domain.User;
@@ -93,12 +95,26 @@ public class RoomController {
     }
 
     @GetMapping("/{roomId}/participants")
-    public ResponseEntity<List<String>> getRoomParticipants(@PathVariable("roomId") Long roomId) {
+    public ResponseEntity<List<ParticipantInfo>> getRoomParticipants(@PathVariable("roomId") Long roomId) {
         try {
-            List<String> participants = roomService.getRoomParticipants(roomId);
+            List<ParticipantInfo> participants = roomService.getRoomParticipants(roomId);
             return ResponseEntity.ok(participants);
         } catch (RoomNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
+    }
+
+    @PostMapping("/{roomId}/ready")
+    public ResponseEntity<String> setReady(@PathVariable("roomId") Long roomId) {
+        User currentUser = roomService.getCurrentUser();
+        roomService.updateParticipantStatus(roomId, currentUser.getId(), ParticipantStatus.READY);
+        return ResponseEntity.ok("준비 완료");
+    }
+
+    @PostMapping("/{roomId}/start")
+    public ResponseEntity<String> startRoom(@PathVariable("roomId") Long roomId) {
+        User currentUser = roomService.getCurrentUser();
+        String message = roomService.startRoom(roomId, currentUser);
+        return new ResponseEntity<>(message, HttpStatus.OK);
     }
 }

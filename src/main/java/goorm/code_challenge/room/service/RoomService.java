@@ -1,7 +1,10 @@
 package goorm.code_challenge.room.service;
 
+import goorm.code_challenge.room.domain.Participant;
+import goorm.code_challenge.room.domain.ParticipantStatus;
 import goorm.code_challenge.room.domain.Room;
 import goorm.code_challenge.room.domain.RoomStatus;
+import goorm.code_challenge.room.dto.response.ParticipantInfo;
 import goorm.code_challenge.room.repository.RoomRepository;
 import goorm.code_challenge.user.domain.User;
 import goorm.code_challenge.user.repository.UserRepository;
@@ -109,12 +112,12 @@ public class RoomService {
     }
 
     @Transactional(readOnly = true)
-    public List<String> getRoomParticipants(Long roomId) {
+    public List<ParticipantInfo> getRoomParticipants(Long roomId) {
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new RoomNotFoundException("해당 방을 찾을 수 없습니다."));
 
         return room.getParticipants().stream()
-                .map(User::getLoginId)
+                .map(participant -> new ParticipantInfo(participant.getUser().getLoginId(), participant.getStatus().name()))
                 .collect(Collectors.toList());
     }
 
@@ -150,5 +153,38 @@ public class RoomService {
         }
 
         return currentUser;
+    }
+
+    @Transactional
+    public void updateParticipantStatus(Long roomId, Long userId, ParticipantStatus status) {
+        Room room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new CustomException(ErrorCode.BAD_REQUEST, "해당 방을 찾을 수 없습니다."));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.BAD_REQUEST, "해당 사용자를 찾을 수 없습니다."));
+
+        room.updateParticipantStatus(user, status);
+        roomRepository.save(room);
+    }
+
+    @Transactional
+    public String startRoom(Long roomId, User currentUser) {
+        Room room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new CustomException(ErrorCode.BAD_REQUEST, "해당 방을 찾을 수 없습니다."));
+
+        if (!room.getHost().getId().equals(currentUser.getId())) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED, "방장만 방을 시작할 수 있습니다.");
+        }
+
+        if (room.getParticipants().size() < 2) {
+            throw new CustomException(ErrorCode.BAD_REQUEST, "방을 시작하기 위해 최소 2명(방장 포함)이 필요합니다.");
+        }
+
+        if (room.allParticipantsReady()) {
+            room.setRoomStatus(RoomStatus.ONGOING);
+            roomRepository.save(room);
+            return "방이 시작되었습니다.";
+        } else {
+            return "모든 참가자가 준비되지 않았습니다.";
+        }
     }
 }
