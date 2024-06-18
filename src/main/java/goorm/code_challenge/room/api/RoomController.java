@@ -33,9 +33,9 @@ public class RoomController extends BaseController {
     private final ScoreService scoreService;
 
     @PostMapping
-    public ResponseEntity<String> createRoom(@Valid @RequestBody CreateRoomRequest roomRequest) {
+    public ResponseEntity<RoomDTO> createRoom(@Valid @RequestBody CreateRoomRequest roomRequest) {
         RoomDTO createdRoom = roomService.createRoom(roomRequest);
-        return new ResponseEntity<>("방이 생성되었습니다.", HttpStatus.CREATED);
+        return new ResponseEntity<>(createdRoom, HttpStatus.CREATED);
     }
 
     @GetMapping("/{roomId}")

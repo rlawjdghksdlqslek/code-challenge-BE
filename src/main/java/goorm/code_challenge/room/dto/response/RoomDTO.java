@@ -12,11 +12,11 @@ import java.util.List;
 public class RoomDTO {
     private Long id;
     private String roomTitle;
-    private String hostName; // 호스트 이름
-    private Double averageDifficulty;
+    private String hostName;
+    private Integer averageDifficulty;
     private String description;
     private int duration;
-    private List<Long> problems; // 추가된 필드
+    private List<Long> problems;
 
     public RoomDTO() {}
 

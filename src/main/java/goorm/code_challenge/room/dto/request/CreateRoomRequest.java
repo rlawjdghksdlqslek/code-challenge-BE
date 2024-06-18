@@ -29,17 +29,18 @@ public class CreateRoomRequest {
 
     @Min(value = 30, message = "풀이 시간은 최소 30분 이상이어야 합니다.")
     @Max(value = 120, message = "풀이 시간은 최대 2시간 이내여야 합니다.")
-    private int duration; // 분 단위로 저장
+    private int duration;
 
     @NotNull(message = "문제 목록은 필수 항목입니다.")
     @Size(min = 1, message = "적어도 하나의 문제를 선택해야 합니다.")
-    private List<Long> problems; // 추가된 필드
+    private List<Long> problems;
 
     public Room toEntity(User host) {
+        Integer roundedDifficulty = (int) Math.round(this.averageDifficulty);
         return Room.builder()
                 .roomTitle(this.roomTitle)
                 .duration(this.duration)
-                .averageDifficulty(this.averageDifficulty)
+                .averageDifficulty(roundedDifficulty)
                 .description(this.description)
                 .host(host)
                 .roomStatus(RoomStatus.WAITING)
