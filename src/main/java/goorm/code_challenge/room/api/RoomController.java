@@ -26,9 +26,10 @@ public class RoomController {
     private final RoomService roomService;
 
     @PostMapping
-    public ResponseEntity<RoomDTO> createRoom(@Valid @RequestBody CreateRoomRequest roomRequest) {
-        RoomDTO createdRoom = roomService.createRoom(roomRequest);
-        return new ResponseEntity<>(createdRoom, HttpStatus.CREATED);
+    public ResponseEntity<String> createRoom(@Valid @RequestBody CreateRoomRequest roomRequest) {
+        User currentUser = roomService.getCurrentUser();
+        Room createdRoom = roomService.createRoom(roomRequest.toEntity(currentUser));
+        return new ResponseEntity<>("방이 생성되었습니다.", HttpStatus.CREATED);
     }
 
     @GetMapping("/{roomId}")
