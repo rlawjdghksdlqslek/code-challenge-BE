@@ -1,6 +1,8 @@
 package goorm.code_challenge.user.api;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -21,6 +23,7 @@ import goorm.code_challenge.global.exception.BaseController;
 import goorm.code_challenge.user.application.MyPageService;
 import goorm.code_challenge.user.dto.request.UserNameUpdateRequest;
 import goorm.code_challenge.user.dto.response.MyPageResponse;
+import goorm.code_challenge.user.dto.response.RankingResponse;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -45,5 +48,11 @@ public class MyPageController extends BaseController {
 		myPageService.updateImage(multipartFile);
 
 		return makeAPIResponse("이미지가 변경 되었습니다");
+	}
+	@GetMapping("/ranking")
+	public ApiResponse<List<RankingResponse>> getUserRanking()  {
+		List<RankingResponse> ranking = myPageService.getRanking();
+
+		return makeAPIResponse(Collections.singletonList(ranking));
 	}
 }
