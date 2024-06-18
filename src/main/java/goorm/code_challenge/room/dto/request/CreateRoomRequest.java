@@ -17,6 +17,9 @@ public class CreateRoomRequest {
     @Size(max = 100, message = "방 제목은 100자 이내여야 합니다.")
     private String roomTitle;
 
+    @NotBlank(message = "호스트 이름은 필수 항목입니다.")
+    private String hostName;
+
     @NotNull(message = "평균 난이도는 필수 항목입니다.")
     private Double averageDifficulty;
 
