@@ -27,8 +27,7 @@ public class RoomController {
 
     @PostMapping
     public ResponseEntity<String> createRoom(@Valid @RequestBody CreateRoomRequest roomRequest) {
-        User currentUser = roomService.getCurrentUser();
-        Room createdRoom = roomService.createRoom(roomRequest.toEntity(currentUser));
+        RoomDTO createdRoom = roomService.createRoom(roomRequest);
         return new ResponseEntity<>("방이 생성되었습니다.", HttpStatus.CREATED);
     }
 
@@ -41,8 +40,7 @@ public class RoomController {
 
     @PutMapping("/{roomId}")
     public ResponseEntity<RoomDTO> updateRoom(@PathVariable("roomId") Long roomId, @Valid @RequestBody RoomDTO updatedRoomDTO) {
-        User currentUser = roomService.getCurrentUser();
-        Room updatedRoom = roomService.updateRoom(roomId, updatedRoomDTO.toEntity(currentUser));
+        Room updatedRoom = roomService.updateRoom(roomId, updatedRoomDTO.toEntity(null));
         return new ResponseEntity<>(new RoomDTO(updatedRoom), HttpStatus.OK);
     }
 
@@ -97,8 +95,12 @@ public class RoomController {
     @GetMapping("/{roomId}/participants")
     public ResponseEntity<List<ParticipantInfo>> getRoomParticipants(@PathVariable("roomId") Long roomId) {
         try {
-            List<ParticipantInfo> participants = roomService.getRoomParticipants(roomId);
-            return ResponseEntity.ok(participants);
+            // RoomService에서 List<String>을 받아와서 List<ParticipantInfo>로 변환
+            List<String> participants = roomService.getRoomParticipants(roomId);
+            List<ParticipantInfo> participantInfos = participants.stream()
+                    .map(loginId -> new ParticipantInfo(loginId, "ACTIVE")) // 필요한 상태로 ParticipantInfo 객체 생성
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(participantInfos);
         } catch (RoomNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }

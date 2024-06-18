@@ -21,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -126,12 +125,12 @@ public class RoomService {
     }
 
     @Transactional(readOnly = true)
-    public List<ParticipantInfo> getRoomParticipants(Long roomId) {
+    public List<String> getRoomParticipants(Long roomId) {
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new RoomNotFoundException("해당 방을 찾을 수 없습니다."));
 
         return room.getParticipants().stream()
-                .map(participant -> new ParticipantInfo(participant.getUser().getLoginId(), participant.getStatus().name()))
+                .map(participant -> participant.getUser().getLoginId())
                 .collect(Collectors.toList());
     }
 
