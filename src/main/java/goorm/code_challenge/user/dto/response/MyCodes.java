@@ -4,7 +4,9 @@ import java.time.LocalDateTime;
 
 import goorm.code_challenge.ide.domain.Submission;
 import goorm.code_challenge.problem.domain.Problem;
+import lombok.Getter;
 
+@Getter
 public class MyCodes {
 	private Long roomId;
 	private Long problemId;

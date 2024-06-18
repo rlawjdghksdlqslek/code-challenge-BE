@@ -3,7 +3,9 @@ package goorm.code_challenge.user.dto.response;
 import java.util.List;
 
 import goorm.code_challenge.user.domain.User;
+import lombok.Getter;
 
+@Getter
 public class MyPageResponse {
 	private String userLoginId;
 	private String userName;
