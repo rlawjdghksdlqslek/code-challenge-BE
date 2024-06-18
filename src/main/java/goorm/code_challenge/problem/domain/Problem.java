@@ -36,6 +36,13 @@ public class Problem {
 
 	@NotBlank
 	private String context;
+
+	@NotBlank
+	private String input;
+
+	@NotBlank
+	private String output;
+
 	@NotBlank
 	private String rank;
 

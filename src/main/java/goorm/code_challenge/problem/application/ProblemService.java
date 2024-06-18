@@ -49,6 +49,8 @@ public class ProblemService {
 	private Problem buildProblemFromRequest(ProblemRequest problemRequest) {
 		Problem problem = new Problem();
 		problem.setTitle(problemRequest.getTitle());
+		problem.setInput(problemRequest.getInput());
+		problem.setOutput(problemRequest.getOutput());
 		problem.setContext(problemRequest.getContext());
 		problem.setImage(problemRequest.getImage());
 		problem.setRank(problemRequest.getRank());

@@ -14,6 +14,13 @@ public class ProblemRequest {
 	@NotBlank(message = "내용은 필수 입니다")
 	private String context;
 
+	@NotBlank(message = "입력은 필수 입니다")
+	private String input;
+
+	@NotBlank(message = "출력은 필수 입니다")
+	private String output;
+
+
 	@NotBlank(message = "난이도는 필수 입니다")
 	private String rank;
 
