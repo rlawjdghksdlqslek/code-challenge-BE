@@ -41,7 +41,7 @@ public class ScoreService {
 			throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR, "모든 참가자가 코드를 제출하지 않았습니다");
 		}
 		List<Submission> sortedSubmissions = submissions.stream()
-			.sorted(Comparator.comparing(Submission::getSubmitTime))
+			.sorted(Comparator.comparing(Submission::getDurationTime))
 			.toList();
 		List<ScoreDTO> scoreDTOS = new ArrayList<>();
 		int rankCount = 0;
@@ -52,10 +52,10 @@ public class ScoreService {
 				int exp = (roomParticipants.size() - rankCount) * 20;
 				user.setExpPoints(user.getExpPoints() + exp);
 				userRepository.save(user);
-				scoreDTOS.add(new ScoreDTO(user.getName(), submission.getSubmitTime(), submission.isSolve(), rankCount,
+				scoreDTOS.add(new ScoreDTO(user.getName(), submission.getDurationTime(), submission.isSolve(), rankCount,
 					user.getLevel(), user.getExtraExpPoints()));
 			} else
-				scoreDTOS.add(new ScoreDTO(user.getName(), submission.getSubmitTime(), submission.isSolve(), 0,
+				scoreDTOS.add(new ScoreDTO(user.getName(), submission.getDurationTime(), submission.isSolve(), 0,
 					user.getLevel(), user.getExtraExpPoints()));
 		}
 		return scoreDTOS;

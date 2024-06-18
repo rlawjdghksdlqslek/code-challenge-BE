@@ -1,5 +1,6 @@
 package goorm.code_challenge.user.dto.response;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import goorm.code_challenge.user.domain.User;
@@ -12,7 +13,7 @@ public class MyPageResponse {
 	private String profileImage;
 	private Integer level;
 	private Float extraExp;
-	private List<MyCodes> myCodes;
+	private List<MyCodes> myCodes=new ArrayList<>();
 
 	public MyPageResponse(User user,List<MyCodes> myCodes) {
 		this.userLoginId=user.getLoginId();

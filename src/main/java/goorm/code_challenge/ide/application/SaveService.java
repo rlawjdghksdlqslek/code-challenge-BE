@@ -1,6 +1,7 @@
 package goorm.code_challenge.ide.application;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -59,7 +60,8 @@ public class SaveService {
 		submission.setProblemId(dto.getProblemId());
 		submission.setCodePath(codePathDto.getFilePath());
 		submission.setSolve(codePathDto.isSolved());
-		submission.setSubmitTime(dto.getLocalDateTime());
+		submission.setSubmitTime(LocalDateTime.now());
+		submission.setDurationTime(numberToTime(dto.getTime()));
 		submissionRepository.save(submission);
 
 		if(codePathDto.isSolved()){
@@ -68,6 +70,12 @@ public class SaveService {
 		}
 
 		return submission;
+	}
+	public LocalTime numberToTime(Long time){
+		int hours = (int) (time / 3600);
+		int minutes = (int) ((time % 3600) / 60);
+		int seconds = (int) (time % 60);
+		return LocalTime.of(hours, minutes, seconds);
 	}
 
 	public List<FeedbackResponse> getCode(FeedbackRequest feedbackRequest) {

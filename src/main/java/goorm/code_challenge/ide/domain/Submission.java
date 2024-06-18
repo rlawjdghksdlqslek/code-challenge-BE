@@ -1,6 +1,7 @@
 package goorm.code_challenge.ide.domain;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -26,6 +27,8 @@ public class Submission {
 	private String codePath;
 
 	private boolean isSolve;
+
+	private LocalTime durationTime;
 
 	private LocalDateTime submitTime;
 }

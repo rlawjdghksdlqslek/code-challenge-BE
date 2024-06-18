@@ -16,7 +16,7 @@ public class CodeSubmission {
 	private String code;
 	@NotBlank(message = "언어는 필수 입력값입니다")
 	private String compileLanguage;
-	@NotBlank(message = "제출 시간은 필수 입력값입니다")
-	private LocalDateTime localDateTime;
+	@NotNull(message = "제출 시간은 필수 입력값입니다")
+	private Long time;
 
 }
