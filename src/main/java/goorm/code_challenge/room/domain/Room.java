@@ -27,7 +27,7 @@ public class Room {
     private int duration;
 
     @Column(nullable = false)
-    private Double averageDifficulty;
+    private Integer averageDifficulty; // 정수형으로 수정
 
     @Column(length = 500)
     private String description;
@@ -49,7 +49,7 @@ public class Room {
     private List<Participant> participants = new ArrayList<>();
 
     @Builder
-    public Room(String roomTitle, int duration, Double averageDifficulty, String description, User host, RoomStatus roomStatus, List<Long> problems) {
+    public Room(String roomTitle, int duration, Integer averageDifficulty, String description, User host, RoomStatus roomStatus, List<Long> problems) {
         this.roomTitle = roomTitle;
         this.duration = duration;
         this.averageDifficulty = averageDifficulty;

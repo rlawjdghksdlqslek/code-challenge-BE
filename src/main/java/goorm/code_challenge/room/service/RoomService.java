@@ -32,7 +32,6 @@ public class RoomService {
 
     @Transactional
     public RoomDTO createRoom(CreateRoomRequest roomRequest) {
-        // hostName으로 User 찾기
         User host = userRepository.findByLoginId(roomRequest.getHostName());
         if (host == null) {
             throw new CustomException(ErrorCode.BAD_REQUEST, "해당 호스트를 찾을 수 없습니다.");
@@ -41,17 +40,15 @@ public class RoomService {
         Room room = roomRequest.toEntity(host);
         room.setRoomStatus(RoomStatus.WAITING);
         Room createdRoom = roomRepository.save(room);
-        createdRoom.addParticipant(host); // 방 생성 시 호스트를 자동으로 참가자로 추가
+        createdRoom.addParticipant(host);
 
-        // 응답을 위해 RoomDTO로 변환
         return new RoomDTO(createdRoom);
     }
 
     @Transactional(readOnly = true)
     public Room getRoom(Long roomId) {
-        Room room = roomRepository.findById(roomId)
+        return roomRepository.findById(roomId)
                 .orElseThrow(() -> new RoomNotFoundException("해당 방을 찾을 수 없습니다."));
-        return room;
     }
 
     @Transactional
@@ -100,7 +97,7 @@ public class RoomService {
         }
 
         User currentUser = getCurrentUser();
-        room.addParticipant(currentUser); // 상태 업데이트 포함
+        room.addParticipant(currentUser);
         roomRepository.save(room);
     }
 
@@ -110,12 +107,11 @@ public class RoomService {
                 .orElseThrow(() -> new RoomNotFoundException("해당 방을 찾을 수 없습니다."));
 
         User currentUser = getCurrentUser();
-        room.removeParticipant(currentUser); // 상태 업데이트 포함
+        room.removeParticipant(currentUser);
 
         if (room.getParticipants().isEmpty()) {
             roomRepository.delete(room);
         } else {
-            // 새로운 방장 선정: 가장 먼저 입장한 사람을 새로운 방장으로 설정
             if (room.getHost().equals(currentUser) && !room.getParticipants().isEmpty()) {
                 User newHost = room.getParticipants().get(0).getUser();
                 room.setHost(newHost);
