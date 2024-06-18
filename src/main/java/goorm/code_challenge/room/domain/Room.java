@@ -40,9 +40,6 @@ public class Room {
     @Column(nullable = false)
     private RoomStatus roomStatus;
 
-    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Participant> participants = new ArrayList<>();
-
     @ElementCollection
     @CollectionTable(name = "room_problems", joinColumns = @JoinColumn(name = "room_id"))
     @Column(name = "question")

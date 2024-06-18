@@ -35,7 +35,7 @@ public class ScoreService {
 		if(room.isEmpty()){
 			throw new CustomException(ErrorCode.BAD_REQUEST, "존재하지 않는 방입니다");
 		}
-		List<ParticipantInfo> roomParticipants = roomService.getRoomParticipants(roomId);
+		List<String> roomParticipants = roomService.getRoomParticipants(roomId);
 		List<Submission> submissions = submissionRepository.findAllByRoomIdAndProblemId(roomId, problemId);
 		if (roomParticipants.size() > submissions.size()) {
 			throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR, "모든 참가자가 코드를 제출하지 않았습니다");

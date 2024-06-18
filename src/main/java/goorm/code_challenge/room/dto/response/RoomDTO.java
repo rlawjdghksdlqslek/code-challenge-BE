@@ -16,18 +16,18 @@ public class RoomDTO {
     private Double averageDifficulty;
     private String description;
     private int duration;
-    private List<String> questions; // 추가된 필드
+    private List<Long> problems; // 추가된 필드
 
     public RoomDTO() {}
 
     public RoomDTO(Room room) {
         this.id = room.getRoomId();
         this.roomTitle = room.getRoomTitle();
-        this.hostName = room.getHost().getLoginId(); // 호스트의 로그인 ID
+        this.hostName = room.getHost().getLoginId();
         this.averageDifficulty = room.getAverageDifficulty();
         this.description = room.getDescription();
         this.duration = room.getDuration();
-        this.questions = room.getQuestions();
+        this.problems = room.getProblems();
     }
 
     public Room toEntity(User host) {
@@ -37,7 +37,7 @@ public class RoomDTO {
                 .averageDifficulty(this.averageDifficulty)
                 .description(this.description)
                 .host(host)
-                .questions(this.questions)
+                .problems(this.problems)
                 .build();
     }
 }

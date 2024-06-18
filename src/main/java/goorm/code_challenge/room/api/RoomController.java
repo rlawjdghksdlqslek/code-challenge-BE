@@ -1,5 +1,7 @@
 package goorm.code_challenge.room.api;
 
+import goorm.code_challenge.global.exception.ApiResponse;
+import goorm.code_challenge.global.exception.BaseController;
 import goorm.code_challenge.global.exception.CustomException;
 import goorm.code_challenge.global.exception.ErrorCode;
 import goorm.code_challenge.room.domain.ParticipantStatus;
@@ -7,7 +9,9 @@ import goorm.code_challenge.room.domain.Room;
 import goorm.code_challenge.room.dto.request.CreateRoomRequest;
 import goorm.code_challenge.room.dto.response.ParticipantInfo;
 import goorm.code_challenge.room.dto.response.RoomDTO;
+import goorm.code_challenge.room.dto.response.ScoreDTO;
 import goorm.code_challenge.room.service.RoomService;
+import goorm.code_challenge.room.service.ScoreService;
 import goorm.code_challenge.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -15,15 +19,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
+
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/rooms")
 @RequiredArgsConstructor
-public class RoomController {
+public class RoomController extends BaseController {
 
     private final RoomService roomService;
+    private final ScoreService scoreService;
 
     @PostMapping
     public ResponseEntity<String> createRoom(@Valid @RequestBody CreateRoomRequest roomRequest) {
