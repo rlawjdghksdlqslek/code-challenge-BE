@@ -59,7 +59,7 @@ public class SaveService {
 		submission.setProblemId(dto.getProblemId());
 		submission.setCodePath(codePathDto.getFilePath());
 		submission.setSolve(codePathDto.isSolved());
-		submission.setSubmitTime(LocalDateTime.now());
+		submission.setSubmitTime(dto.getLocalDateTime());
 		submissionRepository.save(submission);
 
 		if(codePathDto.isSolved()){

@@ -1,5 +1,7 @@
 package goorm.code_challenge.ide.dto.reuest;
 
+import java.time.LocalDateTime;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -14,5 +16,7 @@ public class CodeSubmission {
 	private String code;
 	@NotBlank(message = "언어는 필수 입력값입니다")
 	private String compileLanguage;
+	@NotBlank(message = "제출 시간은 필수 입력값입니다")
+	private LocalDateTime localDateTime;
 
 }
