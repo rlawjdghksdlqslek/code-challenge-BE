@@ -43,7 +43,6 @@ public class Room {
     @ElementCollection
     @CollectionTable(name = "room_problems", joinColumns = @JoinColumn(name = "room_id"))
     @Column(name = "question")
-
     private List<Long> problems = new ArrayList<>();
 
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
