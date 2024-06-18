@@ -73,7 +73,8 @@ public class SecurityConfig {
 
 		http
 				.authorizeHttpRequests((auth) -> auth
-						.requestMatchers("/api/login", "/api/join", "/api/reissue", "/", "/chat/**").permitAll()  // WebSocket 경로 허용
+						.requestMatchers("/api/login", "/api/join", "/api/reissue", "/index.html", "/", "/chat/**").permitAll()
+						.requestMatchers("/pub/**").authenticated()  // 메시지 전송 경로 인증 요구
 						.anyRequest().authenticated());
 
 		http

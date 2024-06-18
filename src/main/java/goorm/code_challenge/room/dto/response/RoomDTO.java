@@ -1,10 +1,11 @@
 package goorm.code_challenge.room.dto.response;
 
 import goorm.code_challenge.room.domain.Room;
-import goorm.code_challenge.room.domain.RoomStatus;
 import goorm.code_challenge.user.domain.User;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -14,19 +15,19 @@ public class RoomDTO {
     private String hostName; // 호스트 이름
     private Double averageDifficulty;
     private String description;
-    private RoomStatus roomStatus;
     private int duration;
+    private List<String> questions; // 추가된 필드
 
     public RoomDTO() {}
 
     public RoomDTO(Room room) {
         this.id = room.getRoomId();
         this.roomTitle = room.getRoomTitle();
-        this.hostName = room.getHost().getLoginId(); // Assuming 'loginId' is used as unique identifier
+        this.hostName = room.getHost().getLoginId(); // 호스트의 로그인 ID
         this.averageDifficulty = room.getAverageDifficulty();
         this.description = room.getDescription();
-        this.roomStatus = room.getRoomStatus();
         this.duration = room.getDuration();
+        this.questions = room.getQuestions();
     }
 
     public Room toEntity(User host) {
@@ -36,7 +37,7 @@ public class RoomDTO {
                 .averageDifficulty(this.averageDifficulty)
                 .description(this.description)
                 .host(host)
-                .roomStatus(this.roomStatus)
+                .questions(this.questions)
                 .build();
     }
 }

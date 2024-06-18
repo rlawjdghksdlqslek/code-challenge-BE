@@ -1,10 +1,11 @@
 package goorm.code_challenge.room.service;
 
-import goorm.code_challenge.room.domain.Participant;
 import goorm.code_challenge.room.domain.ParticipantStatus;
 import goorm.code_challenge.room.domain.Room;
 import goorm.code_challenge.room.domain.RoomStatus;
+import goorm.code_challenge.room.dto.request.CreateRoomRequest;
 import goorm.code_challenge.room.dto.response.ParticipantInfo;
+import goorm.code_challenge.room.dto.response.RoomDTO;
 import goorm.code_challenge.room.repository.RoomRepository;
 import goorm.code_challenge.user.domain.User;
 import goorm.code_challenge.user.repository.UserRepository;
@@ -13,8 +14,8 @@ import goorm.code_challenge.global.exception.ErrorCode;
 import goorm.code_challenge.room.api.RoomFullException;
 import goorm.code_challenge.room.api.RoomNotFoundException;
 import jakarta.validation.ValidationException;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -30,19 +31,26 @@ public class RoomService {
     private final UserRepository userRepository;
 
     @Transactional
-    public Room createRoom(Room room) {
+    public RoomDTO createRoom(CreateRoomRequest roomRequest) {
+        // hostName으로 User 찾기
+        User host = userRepository.findByLoginId(roomRequest.getHostName());
+        if (host == null) {
+            throw new CustomException(ErrorCode.BAD_REQUEST, "해당 호스트를 찾을 수 없습니다.");
+        }
+
+        Room room = roomRequest.toEntity(host);
         room.setRoomStatus(RoomStatus.WAITING);
         Room createdRoom = roomRepository.save(room);
-        // 방 생성시 호스트도 자동으로 참여하도록 설정
-        createdRoom.addParticipant(room.getHost());
-        return createdRoom;
+        createdRoom.addParticipant(host); // 방 생성 시 호스트를 자동으로 참가자로 추가
+
+        // 응답을 위해 RoomDTO로 변환
+        return new RoomDTO(createdRoom);
     }
 
     @Transactional(readOnly = true)
     public Room getRoom(Long roomId) {
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new RoomNotFoundException("해당 방을 찾을 수 없습니다."));
-        room.updateRoomStatus(); // 방 상태 업데이트
         return room;
     }
 
@@ -107,17 +115,22 @@ public class RoomService {
         if (room.getParticipants().isEmpty()) {
             roomRepository.delete(room);
         } else {
+            // 새로운 방장 선정: 가장 먼저 입장한 사람을 새로운 방장으로 설정
+            if (room.getHost().equals(currentUser) && !room.getParticipants().isEmpty()) {
+                User newHost = room.getParticipants().get(0).getUser();
+                room.setHost(newHost);
+            }
             roomRepository.save(room);
         }
     }
 
     @Transactional(readOnly = true)
-    public List<ParticipantInfo> getRoomParticipants(Long roomId) {
+    public List<String> getRoomParticipants(Long roomId) {
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new RoomNotFoundException("해당 방을 찾을 수 없습니다."));
 
         return room.getParticipants().stream()
-                .map(participant -> new ParticipantInfo(participant.getUser().getLoginId(), participant.getStatus().name()))
+                .map(participant -> participant.getUser().getLoginId())
                 .collect(Collectors.toList());
     }
 

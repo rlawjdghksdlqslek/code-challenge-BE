@@ -1,9 +1,5 @@
 package goorm.code_challenge.room.domain;
 
-import goorm.code_challenge.chat.domain.ChatMessage;
-import goorm.code_challenge.codes.domain.CodeEntity;
-import goorm.code_challenge.global.exception.CustomException;
-import goorm.code_challenge.global.exception.ErrorCode;
 import goorm.code_challenge.user.domain.User;
 import jakarta.persistence.*;
 import lombok.Builder;
@@ -45,15 +41,13 @@ public class Room {
     private RoomStatus roomStatus;
 
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ChatMessage> chatMessages;
-
-    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CodeEntity> codes;
+    private List<Participant> participants = new ArrayList<>();
 
     @ElementCollection
     @CollectionTable(name = "room_problems", joinColumns = @JoinColumn(name = "room_id"))
     @Column(name = "question")
-    private List<Long> problems;
+
+    private List<Long> problems = new ArrayList<>();
 
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Participant> participants = new ArrayList<>();
@@ -69,39 +63,35 @@ public class Room {
         this.problems = problems;
     }
 
-    // 참가자 수에 따라 방 상태 업데이트
-    public void updateRoomStatus() {
-        if (this.participants.size() >= 8) {
-            this.roomStatus = RoomStatus.FULL;
-        } else {
-            this.roomStatus = RoomStatus.WAITING;
-        }
+    public boolean isParticipant(User user) {
+        return this.participants.stream().anyMatch(participant -> participant.getUser().equals(user));
     }
 
     public void addParticipant(User user) {
-        if (this.participants.size() >= 8) {
-            throw new CustomException(ErrorCode.BAD_REQUEST, "방에 참여할 수 있는 최대 인원을 초과했습니다.");
+        if (isParticipant(user)) {
+            throw new RuntimeException("User is already a participant in the room");
         }
-        this.participants.add(new Participant(this, user));
-        updateRoomStatus(); // 상태 업데이트
+        Participant participant = new Participant(this, user);
+        this.participants.add(participant);
     }
 
     public void removeParticipant(User user) {
-        this.participants.removeIf(p -> p.getUser().equals(user));
-        updateRoomStatus(); // 상태 업데이트
+        this.participants.removeIf(participant -> participant.getUser().equals(user));
+
+        // 방장이 나갈 경우, 첫 번째로 입장한 참가자를 새로운 방장으로 설정
+        if (this.host.equals(user) && !this.participants.isEmpty()) {
+            this.host = this.participants.get(0).getUser();
+        }
     }
 
-    // 참가자 상태 변경
+    public boolean allParticipantsReady() {
+        return this.participants.stream().allMatch(participant -> participant.getStatus() == ParticipantStatus.READY);
+    }
+
     public void updateParticipantStatus(User user, ParticipantStatus status) {
         this.participants.stream()
-                .filter(p -> p.getUser().equals(user))
+                .filter(participant -> participant.getUser().equals(user))
                 .findFirst()
-                .ifPresent(p -> p.setStatus(status));
-    }
-
-    // 모든 참가자가 준비되었는지 확인
-    public boolean allParticipantsReady() {
-        return this.participants.stream()
-                .allMatch(p -> p.getStatus() == ParticipantStatus.READY);
+                .ifPresent(participant -> participant.setStatus(status));
     }
 }

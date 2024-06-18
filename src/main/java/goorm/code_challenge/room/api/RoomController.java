@@ -1,49 +1,33 @@
 package goorm.code_challenge.room.api;
 
-
-import goorm.code_challenge.room.domain.ParticipantStatus;
-import goorm.code_challenge.global.exception.ApiResponse;
-import goorm.code_challenge.global.exception.BaseController;
 import goorm.code_challenge.global.exception.CustomException;
 import goorm.code_challenge.global.exception.ErrorCode;
+import goorm.code_challenge.room.domain.ParticipantStatus;
 import goorm.code_challenge.room.domain.Room;
 import goorm.code_challenge.room.dto.request.CreateRoomRequest;
 import goorm.code_challenge.room.dto.response.ParticipantInfo;
 import goorm.code_challenge.room.dto.response.RoomDTO;
-import goorm.code_challenge.room.dto.response.ScoreDTO;
 import goorm.code_challenge.room.service.RoomService;
-import goorm.code_challenge.room.service.ScoreService;
 import goorm.code_challenge.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.Errors;
-import org.springframework.validation.FieldError;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/rooms")
 @RequiredArgsConstructor
-public class RoomController extends BaseController {
+public class RoomController {
 
     private final RoomService roomService;
-    private final ScoreService scoreService;
 
     @PostMapping
-    public ResponseEntity<String> createRoom(@Validated @RequestBody CreateRoomRequest roomRequest, Errors errors) {
-        if (errors.hasErrors()) {
-            for (FieldError error : errors.getFieldErrors()) {
-                throw new CustomException(ErrorCode.BAD_REQUEST, error.getDefaultMessage());
-            }
-        }
-        User currentUser = roomService.getCurrentUser();
-        Room createdRoom = roomService.createRoom(roomRequest.toEntity(currentUser));
+    public ResponseEntity<String> createRoom(@Valid @RequestBody CreateRoomRequest roomRequest) {
+        RoomDTO createdRoom = roomService.createRoom(roomRequest);
         return new ResponseEntity<>("방이 생성되었습니다.", HttpStatus.CREATED);
     }
 
@@ -55,14 +39,8 @@ public class RoomController extends BaseController {
     }
 
     @PutMapping("/{roomId}")
-    public ResponseEntity<RoomDTO> updateRoom(@PathVariable("roomId") Long roomId, @Validated @RequestBody RoomDTO updatedRoomDTO,Errors errors) {
-        if (errors.hasErrors()) {
-            for (FieldError error : errors.getFieldErrors()) {
-                throw new CustomException(ErrorCode.BAD_REQUEST, error.getDefaultMessage());
-            }
-        }
-        User currentUser = roomService.getCurrentUser();
-        Room updatedRoom = roomService.updateRoom(roomId, updatedRoomDTO.toEntity(currentUser));
+    public ResponseEntity<RoomDTO> updateRoom(@PathVariable("roomId") Long roomId, @Valid @RequestBody RoomDTO updatedRoomDTO) {
+        Room updatedRoom = roomService.updateRoom(roomId, updatedRoomDTO.toEntity(null));
         return new ResponseEntity<>(new RoomDTO(updatedRoom), HttpStatus.OK);
     }
 
@@ -117,13 +95,16 @@ public class RoomController extends BaseController {
     @GetMapping("/{roomId}/participants")
     public ResponseEntity<List<ParticipantInfo>> getRoomParticipants(@PathVariable("roomId") Long roomId) {
         try {
-            List<ParticipantInfo> participants = roomService.getRoomParticipants(roomId);
-            return ResponseEntity.ok(participants);
+            // RoomService에서 List<String>을 받아와서 List<ParticipantInfo>로 변환
+            List<String> participants = roomService.getRoomParticipants(roomId);
+            List<ParticipantInfo> participantInfos = participants.stream()
+                    .map(loginId -> new ParticipantInfo(loginId, "ACTIVE")) // 필요한 상태로 ParticipantInfo 객체 생성
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(participantInfos);
         } catch (RoomNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
-
 
     @PostMapping("/{roomId}/ready")
     public ResponseEntity<String> setReady(@PathVariable("roomId") Long roomId) {
@@ -138,10 +119,10 @@ public class RoomController extends BaseController {
         String message = roomService.startRoom(roomId, currentUser);
         return new ResponseEntity<>(message, HttpStatus.OK);
     }
+  
     @GetMapping("/{roomId}/score")
     public ApiResponse<List<ScoreDTO>> getRoomScore(@PathVariable("roomId") Long roomId, @RequestParam("problemId") Long problemId) {
         List<ScoreDTO> roundScore = scoreService.getRoundScore(roomId, problemId);
         return makeAPIResponse(Collections.singletonList(roundScore));
-
     }
 }
