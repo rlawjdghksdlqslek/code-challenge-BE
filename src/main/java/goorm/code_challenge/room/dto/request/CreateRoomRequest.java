@@ -30,7 +30,7 @@ public class CreateRoomRequest {
 
     @NotNull(message = "문제 목록은 필수 항목입니다.")
     @Size(min = 1, message = "적어도 하나의 문제를 선택해야 합니다.")
-    private List<String> questions; // 추가된 필드
+    private List<Long> problems; // 추가된 필드
 
     public Room toEntity(User host) {
         return Room.builder()
@@ -40,7 +40,7 @@ public class CreateRoomRequest {
                 .description(this.description)
                 .host(host)
                 .roomStatus(RoomStatus.WAITING)
-                .questions(this.questions)
+                .problems(this.problems)
                 .build();
     }
 }
