@@ -50,9 +50,9 @@ public class ProblemController extends BaseController {
 		return makeAPIResponse(Collections.singletonList(problem));
 	}
 	@GetMapping("/problem/{id}")
-	public ApiResponse<ProblemResponse> getProblem(@PathVariable Long id){
-		ProblemResponse problem = problemService.getProblem(id);
-		return makeAPIResponse(Collections.singletonList(problem));
+	public ApiResponse<List<ProblemResponse>> getProblem(@PathVariable Long id){
+		List<ProblemResponse> problems = problemService.getProblem(id);
+		return makeAPIResponse(Collections.singletonList(problems));
 	}
 
 

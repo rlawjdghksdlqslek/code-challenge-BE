@@ -44,19 +44,23 @@ public class Room {
     private List<Participant> participants = new ArrayList<>();
 
     @ElementCollection
-    @CollectionTable(name = "room_questions", joinColumns = @JoinColumn(name = "room_id"))
+    @CollectionTable(name = "room_problems", joinColumns = @JoinColumn(name = "room_id"))
     @Column(name = "question")
-    private List<String> questions = new ArrayList<>();
+
+    private List<Long> problems = new ArrayList<>();
+
+    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Participant> participants = new ArrayList<>();
 
     @Builder
-    public Room(String roomTitle, int duration, Double averageDifficulty, String description, User host, RoomStatus roomStatus, List<String> questions) {
+    public Room(String roomTitle, int duration, Double averageDifficulty, String description, User host, RoomStatus roomStatus, List<Long> problems) {
         this.roomTitle = roomTitle;
         this.duration = duration;
         this.averageDifficulty = averageDifficulty;
         this.description = description;
         this.host = host;
         this.roomStatus = roomStatus;
-        this.questions = questions;
+        this.problems = problems;
     }
 
     public boolean isParticipant(User user) {

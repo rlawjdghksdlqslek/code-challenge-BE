@@ -15,6 +15,8 @@ import goorm.code_challenge.problem.dto.ProblemRequest;
 import goorm.code_challenge.problem.dto.ProblemResponse;
 import goorm.code_challenge.problem.repository.ProblemRepository;
 import goorm.code_challenge.ide.repository.TestCaseRepository;
+import goorm.code_challenge.room.domain.Room;
+import goorm.code_challenge.room.repository.RoomRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -22,8 +24,14 @@ import lombok.RequiredArgsConstructor;
 public class ProblemService {
 	private final ProblemRepository problemRepository;
 	private final TestCaseRepository testCaseRepository;
+	private final RoomRepository roomRepository;
 
 	public Problem createProblem(ProblemRequest problemRequest) {
+
+		Problem byTitle = problemRepository.findByTitle(problemRequest.getTitle());
+		if(byTitle!=null){
+			throw new CustomException(ErrorCode.BAD_REQUEST, "이미 존재하는 문제입니다");
+		}
 		validateNumberOfTestCases(problemRequest);
 
 		Problem problem = buildProblemFromRequest(problemRequest);
@@ -67,12 +75,20 @@ public class ProblemService {
 		return problemResponses;
 	}
 
-	public ProblemResponse getProblem(Long id) {
-		Optional<Problem> problem = problemRepository.findById(id);
-		if (problem.isEmpty()) {
-			throw new CustomException(ErrorCode.BAD_REQUEST, "해당 하는 문제가 없습니다");
+	public List<ProblemResponse> getProblem(Long id) {
+		List<ProblemResponse> problemResponses = new ArrayList<>();
+		Optional<Room> room = roomRepository.findById(id);
+		if (room.isEmpty()) {
+			throw new CustomException(ErrorCode.BAD_REQUEST, "해당 하는 방이 생성되지 않았습니다");
 		}
-
-		return new ProblemResponse(problem.get());
+		List<Long> problems = room.get().getProblems();
+		for(Long problemNumber:problems){
+			Optional<Problem> problem = problemRepository.findById(problemNumber);
+			if(problem.isEmpty()){
+				throw new CustomException(ErrorCode.BAD_REQUEST, "존재 하지 않는 문제입니다");
+			}
+			problemResponses.add(new ProblemResponse(problem.get()));
+		}
+		return problemResponses;
 	}
 }
