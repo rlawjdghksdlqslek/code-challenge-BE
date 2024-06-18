@@ -13,6 +13,7 @@ import goorm.code_challenge.global.exception.ErrorCode;
 import goorm.code_challenge.ide.domain.Submission;
 import goorm.code_challenge.ide.repository.SubmissionRepository;
 import goorm.code_challenge.room.domain.Room;
+import goorm.code_challenge.room.dto.response.ParticipantInfo;
 import goorm.code_challenge.room.dto.response.ScoreDTO;
 import goorm.code_challenge.room.repository.RoomRepository;
 import goorm.code_challenge.user.domain.User;
@@ -30,7 +31,7 @@ public class ScoreService {
 
 	@Transactional
 	public List<ScoreDTO> getRoundScore(Long roomId, Long problemId) {
-		List<String> roomParticipants = roomService.getRoomParticipants(roomId);
+		List<ParticipantInfo> roomParticipants = roomService.getRoomParticipants(roomId);
 		List<Submission> submissions = submissionRepository.findAllByRoomIdAndProblemId(roomId, problemId);
 		List<Submission> sortedSubmissions = submissions.stream()
 			.sorted(Comparator.comparing(Submission::getSubmitTime))
