@@ -138,7 +138,7 @@ public class RoomController extends BaseController {
         String message = roomService.startRoom(roomId, currentUser);
         return new ResponseEntity<>(message, HttpStatus.OK);
     }
-
+    @GetMapping("/{roomId}/score")
     public ApiResponse<List<ScoreDTO>> getRoomScore(@PathVariable("roomId") Long roomId, @RequestParam("problemId") Long problemId) {
         List<ScoreDTO> roundScore = scoreService.getRoundScore(roomId, problemId);
         return makeAPIResponse(Collections.singletonList(roundScore));
