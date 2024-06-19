@@ -41,11 +41,6 @@ public class SaveService {
 		if (testCases.isEmpty()) {
 			throw new CustomException(ErrorCode.BAD_REQUEST, "해당 문제를 찾을 수 없습니다.");
 		}
-		Submission checkExists = submissionRepository.findByRoomIdAndProblemIdAndUserId(
-			dto.getRoomId(), dto.getProblemId(), user.getId());
-		if (checkExists != null) {
-			throw new CustomException(ErrorCode.BAD_REQUEST, "제출은 한번만 가능합니다");
-		}
 		SaveUtil save = switch (dto.getCompileLanguage()) {
 			case "java" -> new JavaSave();
 			case "python" -> new PythonSave();
