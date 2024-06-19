@@ -1,5 +1,6 @@
 package goorm.code_challenge.room.service;
 
+import goorm.code_challenge.room.domain.Participant;
 import goorm.code_challenge.room.domain.ParticipantStatus;
 import goorm.code_challenge.room.domain.Room;
 import goorm.code_challenge.room.domain.RoomStatus;
@@ -15,6 +16,7 @@ import goorm.code_challenge.room.api.RoomFullException;
 import goorm.code_challenge.room.api.RoomNotFoundException;
 import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.Hibernate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -97,7 +99,10 @@ public class RoomService {
     @Transactional
     public ParticipantInfo addUserToRoom(Long roomId) {
         Room room = roomRepository.findById(roomId)
-                .orElseThrow(() -> new RoomNotFoundException("해당 방을 찾을 수 없습니다."));
+            .orElseThrow(() -> new RoomNotFoundException("해당 방을 찾을 수 없습니다."));
+
+        // participants 컬렉션 초기화
+        Hibernate.initialize(room.getParticipants());
 
         if (room.getParticipants().size() >= 8) {
             throw new RoomFullException("방이 가득 찼습니다.");
@@ -109,12 +114,11 @@ public class RoomService {
         }
 
         room.addParticipant(currentUser);
-        roomRepository.save(room);
-
         updateRoomStatus(room);
 
         return new ParticipantInfo(currentUser.getLoginId(), ParticipantStatus.WAITING.name(), currentUser.getName(), currentUser.getProfileImage());
     }
+
 
     @Transactional
     public String removeUserFromRoomAndHandleIfHost(Long roomId) {

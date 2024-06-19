@@ -24,6 +24,7 @@ import goorm.code_challenge.user.domain.User;
 import goorm.code_challenge.user.dto.request.UserNameUpdateRequest;
 import goorm.code_challenge.user.dto.response.MyCodes;
 import goorm.code_challenge.user.dto.response.MyPageResponse;
+import goorm.code_challenge.user.dto.response.RankingResponse;
 import goorm.code_challenge.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -73,6 +74,21 @@ public class MyPageService {
 		}
 		String postImg = s3Uploader.upload(image, "images");
 		user.setProfileImage(postImg);
+	}
+	public List<RankingResponse> getRanking(){
+		List<User> users = userRepository.findTop10ByOrderByExpPointsDesc();
+		List<RankingResponse> rankingResponses = new ArrayList<>();
+		int rank = 1;
+		for (User user:users){
+			int countSolved = countSolvedProblem(user);
+			rankingResponses.add(new RankingResponse(user,rank,countSolved));
+			rank++;
+		}
+		return rankingResponses;
+	}
+	public Integer countSolvedProblem(User user){
+		List<Submission> submissions = submissionRepository.findAllByUserIdAndIsSolve(user.getId(), true);
+		return submissions.size();
 	}
 	private User getCurrentUser() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
