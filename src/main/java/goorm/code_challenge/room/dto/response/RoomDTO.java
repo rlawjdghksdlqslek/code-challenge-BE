@@ -13,6 +13,7 @@ public class RoomDTO {
     private Long id;
     private String roomTitle;
     private String hostName;
+    private String profileImage;
     private Integer averageDifficulty;
     private String description;
     private int duration;
@@ -24,6 +25,7 @@ public class RoomDTO {
         this.id = room.getRoomId();
         this.roomTitle = room.getRoomTitle();
         this.hostName = room.getHost().getLoginId();
+        this.profileImage = room.getHost().getProfileImage();
         this.averageDifficulty = room.getAverageDifficulty();
         this.description = room.getDescription();
         this.duration = room.getDuration();
