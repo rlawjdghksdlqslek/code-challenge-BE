@@ -45,7 +45,7 @@ public class Room {
     @Column(name = "question")
     private List<Long> problems = new ArrayList<>();
 
-    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "room", cascade = CascadeType.PERSIST, orphanRemoval = true)
     private List<Participant> participants = new ArrayList<>();
 
     @Builder

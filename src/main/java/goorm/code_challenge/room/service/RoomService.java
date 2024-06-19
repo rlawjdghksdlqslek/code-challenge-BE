@@ -1,5 +1,6 @@
 package goorm.code_challenge.room.service;
 
+import goorm.code_challenge.room.domain.Participant;
 import goorm.code_challenge.room.domain.ParticipantStatus;
 import goorm.code_challenge.room.domain.Room;
 import goorm.code_challenge.room.domain.RoomStatus;
@@ -14,6 +15,8 @@ import goorm.code_challenge.global.exception.ErrorCode;
 import goorm.code_challenge.room.api.RoomFullException;
 import goorm.code_challenge.room.api.RoomNotFoundException;
 import jakarta.validation.ValidationException;
+
+import org.hibernate.Hibernate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -85,25 +88,34 @@ public class RoomService {
 
     @Transactional
     public void addUserToRoom(Long roomId) {
+
         Room room = roomRepository.findById(roomId)
-                .orElseThrow(() -> new RoomNotFoundException("해당 방을 찾을 수 없습니다."));
+            .orElseThrow(() -> new RoomNotFoundException("해당 방을 찾을 수 없습니다."));
+
+        // participants 컬렉션 초기화
+        Hibernate.initialize(room.getParticipants());
 
         if (room.getParticipants().size() >= 8) {
             throw new RoomFullException("방이 가득 찼습니다.");
         }
 
         User currentUser = getCurrentUser();
+        if (room.isParticipant(currentUser)) {
+            throw new RuntimeException("User is already a participant in the room");
+        }
         room.addParticipant(currentUser);
-        roomRepository.save(room);
 
-        // 방의 상태를 확인하여 업데이트
+
+        // 방 상태 업데이트
         if (room.getParticipants().size() == 8) {
             room.setRoomStatus(RoomStatus.FULL);
         } else {
             room.setRoomStatus(RoomStatus.WAITING);
         }
-        roomRepository.save(room);
+
+        //roomRepository.save(room);
     }
+
 
     @Transactional
     public void removeUserFromRoom(Long roomId) {
