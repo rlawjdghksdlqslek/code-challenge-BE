@@ -19,7 +19,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -52,15 +51,16 @@ public class RoomController extends BaseController {
     }
 
     @DeleteMapping("/{roomId}")
-    public ResponseEntity<String> deleteRoom(@PathVariable("roomId") Long roomId) {
+    public ResponseEntity<ApiResponse<String>> deleteRoom(@PathVariable("roomId") Long roomId) {
         try {
-            roomService.deleteRoom(roomId);
-            return new ResponseEntity<>("방이 삭제되었습니다.", HttpStatus.OK);
+            String message = roomService.deleteRoomAndNotifyParticipants(roomId);
+            ApiResponse<String> response = new ApiResponse<>(Collections.singletonList(message));
+            return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (CustomException e) {
             if (e.getErrorCode() == ErrorCode.UNAUTHORIZED) {
-                return new ResponseEntity<>(e.GetMessage(), HttpStatus.UNAUTHORIZED);
+                return new ResponseEntity<>(new ApiResponse<>(e.getMessage()), HttpStatus.UNAUTHORIZED);
             }
-            return new ResponseEntity<>(e.GetMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(new ApiResponse<>(e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -74,28 +74,29 @@ public class RoomController extends BaseController {
     }
 
     @PostMapping("/{roomId}/join")
-    public ResponseEntity<String> joinRoom(@PathVariable("roomId") Long roomId) {
+    public ResponseEntity<ParticipantInfo> joinRoom(@PathVariable("roomId") Long roomId) {
         try {
-            roomService.addUserToRoom(roomId);
-            return ResponseEntity.ok("참가 완료");
+            ParticipantInfo participantInfo = roomService.addUserToRoom(roomId);
+            return ResponseEntity.ok(participantInfo);
         } catch (RoomFullException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("방이 가득 찼습니다.");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
         } catch (RoomNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("해당 방을 찾을 수 없습니다.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("알 수 없는 오류가 발생했습니다.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 
     @PostMapping("/{roomId}/leave")
-    public ResponseEntity<String> leaveRoom(@PathVariable("roomId") Long roomId) {
+    public ResponseEntity<ApiResponse<String>> leaveRoom(@PathVariable("roomId") Long roomId) {
         try {
-            roomService.removeUserFromRoom(roomId);
-            return ResponseEntity.ok("퇴장 완료");
+            String message = roomService.removeUserFromRoomAndHandleIfHost(roomId);
+            ApiResponse<String> response = new ApiResponse<>(Collections.singletonList(message));
+            return ResponseEntity.ok(response);
         } catch (RoomNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("해당 방을 찾을 수 없습니다.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>("해당 방을 찾을 수 없습니다."));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("알 수 없는 오류가 발생했습니다.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>("알 수 없는 오류가 발생했습니다."));
         }
     }
 

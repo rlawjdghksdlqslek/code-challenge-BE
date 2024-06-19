@@ -14,6 +14,7 @@ import goorm.code_challenge.global.exception.ErrorCode;
 import goorm.code_challenge.room.api.RoomFullException;
 import goorm.code_challenge.room.api.RoomNotFoundException;
 import jakarta.validation.ValidationException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RoomService {
@@ -35,8 +37,12 @@ public class RoomService {
         User currentUser = getCurrentUser();
         Room room = roomRequest.toEntity(currentUser);
         room.setRoomStatus(RoomStatus.WAITING);
+
+        // 호스트를 READY 상태로 설정
+        room.addParticipant(currentUser);
+        room.updateParticipantStatus(currentUser, ParticipantStatus.READY);
+
         Room createdRoom = roomRepository.save(room);
-        createdRoom.addParticipant(currentUser);
 
         return new RoomDTO(createdRoom);
     }
@@ -67,7 +73,7 @@ public class RoomService {
     }
 
     @Transactional
-    public void deleteRoom(Long roomId) {
+    public String deleteRoomAndNotifyParticipants(Long roomId) {
         Room existingRoom = getRoom(roomId);
 
         User currentUser = getCurrentUser();
@@ -76,6 +82,11 @@ public class RoomService {
         }
 
         roomRepository.delete(existingRoom);
+        // 데이터베이스에 즉시 반영
+        roomRepository.flush();
+
+        notifyParticipants(existingRoom, "방이 삭제되었습니다.");
+        return "방이 삭제되었습니다.";
     }
 
     @Transactional(readOnly = true)
@@ -84,7 +95,7 @@ public class RoomService {
     }
 
     @Transactional
-    public void addUserToRoom(Long roomId) {
+    public ParticipantInfo addUserToRoom(Long roomId) {
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new RoomNotFoundException("해당 방을 찾을 수 없습니다."));
 
@@ -93,41 +104,44 @@ public class RoomService {
         }
 
         User currentUser = getCurrentUser();
+        if (room.isParticipant(currentUser)) {
+            throw new CustomException(ErrorCode.BAD_REQUEST, "이미 참가한 유저입니다.");
+        }
+
         room.addParticipant(currentUser);
         roomRepository.save(room);
 
-        // 방의 상태를 확인하여 업데이트
-        if (room.getParticipants().size() == 8) {
-            room.setRoomStatus(RoomStatus.FULL);
-        } else {
-            room.setRoomStatus(RoomStatus.WAITING);
-        }
-        roomRepository.save(room);
+        updateRoomStatus(room);
+
+        return new ParticipantInfo(currentUser.getLoginId(), ParticipantStatus.WAITING.name(), currentUser.getName(), currentUser.getProfileImage());
     }
 
     @Transactional
-    public void removeUserFromRoom(Long roomId) {
+    public String removeUserFromRoomAndHandleIfHost(Long roomId) {
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new RoomNotFoundException("해당 방을 찾을 수 없습니다."));
 
         User currentUser = getCurrentUser();
+        if (!room.isParticipant(currentUser)) {
+            throw new CustomException(ErrorCode.BAD_REQUEST, "이미 퇴장한 유저입니다.");
+        }
+
         room.removeParticipant(currentUser);
 
-        if (room.getParticipants().isEmpty()) {
+        // 방장이 떠날 경우 방 삭제
+        if (currentUser.equals(room.getHost())) {
+            // 참가자가 남아 있어도 방을 삭제
             roomRepository.delete(room);
-        } else {
-            if (room.getHost().equals(currentUser) && !room.getParticipants().isEmpty()) {
-                User newHost = room.getParticipants().get(0).getUser();
-                room.setHost(newHost);
-            }
-            roomRepository.save(room);
-
-            // 방의 상태를 확인하여 업데이트
-            if (room.getParticipants().size() < 8) {
-                room.setRoomStatus(RoomStatus.WAITING);
-            }
-            roomRepository.save(room);
+            // 데이터베이스에 즉시 반영되도록 처리
+            roomRepository.flush();
+            notifyParticipants(room, "방이 삭제되었습니다.");
+            return "방이 삭제되었습니다.";
         }
+
+        roomRepository.save(room);
+        updateRoomStatus(room);
+
+        return "방을 퇴장했습니다.";
     }
 
     @Transactional(readOnly = true)
@@ -146,7 +160,15 @@ public class RoomService {
                 .orElseThrow(() -> new RoomNotFoundException("해당 방을 찾을 수 없습니다."));
 
         return room.getParticipants().stream()
-                .map(participant -> new ParticipantInfo(participant.getUser().getLoginId(), participant.getStatus().name()))
+                .map(participant -> {
+                    User user = participant.getUser();
+                    return new ParticipantInfo(
+                            user.getLoginId(),
+                            participant.getStatus().name(),
+                            user.getName(),
+                            user.getProfileImage()
+                    );
+                })
                 .collect(Collectors.toList());
     }
 
@@ -215,5 +237,22 @@ public class RoomService {
         } else {
             return "모든 참가자가 준비되지 않았습니다.";
         }
+    }
+
+    private void updateRoomStatus(Room room) {
+        if (room.getParticipants().size() < 8) {
+            room.setRoomStatus(RoomStatus.WAITING);
+        }
+        roomRepository.save(room);
+    }
+
+    private void notifyParticipants(Room room, String message) {
+        room.getParticipants().forEach(participant -> {
+            sendNotification(participant.getUser(), message);
+        });
+    }
+
+    private void sendNotification(User user, String message) {
+        log.info("Notifying user {}: {}", user.getLoginId(), message);
     }
 }
