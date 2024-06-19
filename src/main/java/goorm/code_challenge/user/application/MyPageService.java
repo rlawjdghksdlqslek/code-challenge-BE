@@ -40,15 +40,30 @@ public class MyPageService {
 		User user = getCurrentUser();
 		List<Submission> submissions = submissionRepository.findAllByUserId(user.getId());
 		List<MyCodes> myCodes = new ArrayList<>();
+		int userRank = getUserRank(user.getId());
 		if(submissions==null){
-			return new MyPageResponse(user,null);
+			return new MyPageResponse(user,null,userRank);
 		}
 		for(Submission submission :submissions){
 			Optional<Problem> problem = problemRepository.findById(submission.getProblemId());
 			myCodes.add(new MyCodes(submission,problem.get()));
 		}
-		return new MyPageResponse(user,myCodes);
+		return new MyPageResponse(user,myCodes,userRank);
 
+	}
+	public int getUserRank(Long userId) {
+		// exp_points를 기준으로 모든 유저를 내림차순으로 정렬하여 가져옵니다.
+		List<User> users = userRepository.findAllByOrderByExpPointsDesc();
+
+		// 유저의 순위를 계산합니다.
+		int rank = 1;
+		for (User user : users) {
+			if (user.getId().equals(userId)) {
+				return rank;
+			}
+			rank++;
+		}
+		return -1; // 유저를 찾을 수 없는 경우
 	}
 	@Transactional
 	public void updateName(UserNameUpdateRequest userNameUpdateRequest, Errors errors){

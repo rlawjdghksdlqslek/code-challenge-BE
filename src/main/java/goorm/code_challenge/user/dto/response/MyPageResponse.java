@@ -13,14 +13,18 @@ public class MyPageResponse {
 	private String profileImage;
 	private Integer level;
 	private Float extraExp;
+	private Integer ranking;
+	private Integer totalExpPoint;
 	private List<MyCodes> myCodes=new ArrayList<>();
 
-	public MyPageResponse(User user,List<MyCodes> myCodes) {
+	public MyPageResponse(User user,List<MyCodes> myCodes,Integer ranking) {
 		this.userLoginId=user.getLoginId();
 		this.userName=user.getName();
 		this.profileImage=user.getProfileImage();
 		this.level=user.getLevel();
 		this.extraExp=user.getExtraExpPoints();
+		this.totalExpPoint=user.getExpPoints();
 		this.myCodes=myCodes;
+		this.ranking=ranking;
 	}
 }
