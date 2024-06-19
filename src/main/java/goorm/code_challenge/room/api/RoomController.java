@@ -102,12 +102,8 @@ public class RoomController extends BaseController {
     @GetMapping("/{roomId}/participants")
     public ResponseEntity<List<ParticipantInfo>> getRoomParticipants(@PathVariable("roomId") Long roomId) {
         try {
-            // RoomService에서 List<String>을 받아와서 List<ParticipantInfo>로 변환
-            List<String> participants = roomService.getRoomParticipants(roomId);
-            List<ParticipantInfo> participantInfos = participants.stream()
-                    .map(loginId -> new ParticipantInfo(loginId, "ACTIVE")) // 필요한 상태로 ParticipantInfo 객체 생성
-                    .collect(Collectors.toList());
-            return ResponseEntity.ok(participantInfos);
+            List<ParticipantInfo> participants = roomService.getRoomParticipantInfos(roomId);
+            return ResponseEntity.ok(participants);
         } catch (RoomNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
@@ -120,13 +116,20 @@ public class RoomController extends BaseController {
         return ResponseEntity.ok("준비 완료");
     }
 
+    @PostMapping("/{roomId}/unready")
+    public ResponseEntity<String> setUnReady(@PathVariable("roomId") Long roomId) {
+        User currentUser = roomService.getCurrentUser();
+        roomService.updateParticipantStatus(roomId, currentUser.getId(), ParticipantStatus.WAITING);
+        return ResponseEntity.ok("준비 해제");
+    }
+
     @PostMapping("/{roomId}/start")
     public ResponseEntity<String> startRoom(@PathVariable("roomId") Long roomId) {
         User currentUser = roomService.getCurrentUser();
         String message = roomService.startRoom(roomId, currentUser);
         return new ResponseEntity<>(message, HttpStatus.OK);
     }
-  
+
     @GetMapping("/{roomId}/score")
     public ApiResponse<List<ScoreDTO>> getRoomScore(@PathVariable("roomId") Long roomId, @RequestParam("problemId") Long problemId) {
         List<ScoreDTO> roundScore = scoreService.getRoundScore(roomId, problemId);

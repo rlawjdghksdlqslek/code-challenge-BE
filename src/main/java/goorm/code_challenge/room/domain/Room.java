@@ -27,7 +27,7 @@ public class Room {
     private int duration;
 
     @Column(nullable = false)
-    private Integer averageDifficulty; // 정수형으로 수정
+    private Integer averageDifficulty;
 
     @Column(length = 500)
     private String description;
@@ -74,7 +74,6 @@ public class Room {
     public void removeParticipant(User user) {
         this.participants.removeIf(participant -> participant.getUser().equals(user));
 
-        // 방장이 나갈 경우, 첫 번째로 입장한 참가자를 새로운 방장으로 설정
         if (this.host.equals(user) && !this.participants.isEmpty()) {
             this.host = this.participants.get(0).getUser();
         }
