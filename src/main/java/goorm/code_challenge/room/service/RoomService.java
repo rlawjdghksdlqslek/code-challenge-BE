@@ -32,15 +32,11 @@ public class RoomService {
 
     @Transactional
     public RoomDTO createRoom(CreateRoomRequest roomRequest) {
-        User host = userRepository.findByLoginId(roomRequest.getHostName());
-        if (host == null) {
-            throw new CustomException(ErrorCode.BAD_REQUEST, "해당 호스트를 찾을 수 없습니다.");
-        }
-
-        Room room = roomRequest.toEntity(host);
+        User currentUser = getCurrentUser();
+        Room room = roomRequest.toEntity(currentUser);
         room.setRoomStatus(RoomStatus.WAITING);
         Room createdRoom = roomRepository.save(room);
-        createdRoom.addParticipant(host);
+        createdRoom.addParticipant(currentUser);
 
         return new RoomDTO(createdRoom);
     }
@@ -99,6 +95,14 @@ public class RoomService {
         User currentUser = getCurrentUser();
         room.addParticipant(currentUser);
         roomRepository.save(room);
+
+        // 방의 상태를 확인하여 업데이트
+        if (room.getParticipants().size() == 8) {
+            room.setRoomStatus(RoomStatus.FULL);
+        } else {
+            room.setRoomStatus(RoomStatus.WAITING);
+        }
+        roomRepository.save(room);
     }
 
     @Transactional
@@ -117,6 +121,12 @@ public class RoomService {
                 room.setHost(newHost);
             }
             roomRepository.save(room);
+
+            // 방의 상태를 확인하여 업데이트
+            if (room.getParticipants().size() < 8) {
+                room.setRoomStatus(RoomStatus.WAITING);
+            }
+            roomRepository.save(room);
         }
     }
 
@@ -127,6 +137,16 @@ public class RoomService {
 
         return room.getParticipants().stream()
                 .map(participant -> participant.getUser().getLoginId())
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<ParticipantInfo> getRoomParticipantInfos(Long roomId) {
+        Room room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new RoomNotFoundException("해당 방을 찾을 수 없습니다."));
+
+        return room.getParticipants().stream()
+                .map(participant -> new ParticipantInfo(participant.getUser().getLoginId(), participant.getStatus().name()))
                 .collect(Collectors.toList());
     }
 
