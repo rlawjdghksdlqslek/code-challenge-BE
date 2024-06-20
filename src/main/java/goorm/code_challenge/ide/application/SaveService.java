@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -73,10 +75,8 @@ public class SaveService {
 		return LocalTime.of(hours, minutes, seconds);
 	}
 
-	public List<FeedbackResponse> getCode(FeedbackRequest feedbackRequest) {
-		Long room = feedbackRequest.getRoomId();
-		Long problem = feedbackRequest.getProblemId();
-		List<Submission> submission = submissionRepository.findAllByRoomIdAndProblemId(room, problem);
+	public List<FeedbackResponse> getCodes(Long roomId,Long problemId) {
+		List<Submission> submission = submissionRepository.findAllByRoomIdAndProblemId(roomId, problemId);
 		FileToString fileToString = new FileToString();
 		List<FeedbackResponse> feedbackResponses = new ArrayList<>();
 		if (submission == null) {
@@ -91,5 +91,25 @@ public class SaveService {
 		}
 
 		return feedbackResponses;
+	}
+	public FeedbackResponse getMyCode(Long roomId,Long problemId) {
+		User user = getCurrentUser();
+		Submission submission = submissionRepository.findByRoomIdAndProblemIdAndUserId(roomId,problemId,user.getId());
+		FileToString fileToString = new FileToString();
+		if (submission == null) {
+			throw new CustomException(ErrorCode.BAD_REQUEST, "코드를 찾을 수 없습니다");
+		}
+		return new FeedbackResponse(user.getName(), fileToString.changeFile(submission.getCodePath()));
+	}
+	public User getCurrentUser() {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		String currentUserName = authentication.getName();
+		User currentUser = userRepository.findByLoginId(currentUserName);
+
+		if (currentUser == null) {
+			throw new CustomException(ErrorCode.UNAUTHORIZED, "현재 사용자를 찾을 수 없습니다.");
+		}
+
+		return currentUser;
 	}
 }

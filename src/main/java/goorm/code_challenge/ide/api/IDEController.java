@@ -10,9 +10,11 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import goorm.code_challenge.global.exception.ApiResponse;
@@ -53,12 +55,15 @@ public class IDEController extends BaseController {
 		Submission submission = saveService.saveCode(dto, userDetails);
 		return makeAPIResponse(submission);
 	}
-	@GetMapping("/code")
-	public ApiResponse<List<FeedbackResponse>> feedback( @Validated @RequestBody FeedbackRequest feedbackRequest,Errors errors) {
-		validationRequest(errors);
-		List<FeedbackResponse> code = saveService.getCode(feedbackRequest);
-
+	@GetMapping("/code/{roomId}")
+	public ApiResponse<List<FeedbackResponse>> getCodes( @PathVariable("roomId") Long roomId,@RequestParam("problemId") Long problemId) {
+		List<FeedbackResponse> code = saveService.getCodes(roomId,problemId);
 		return makeAPIResponse(Collections.singletonList(code));
+	}
+	@GetMapping("/myCode/{roomId}")
+	public ApiResponse<FeedbackResponse> getMyCode(@PathVariable("roomId") Long roomId,@RequestParam("problemId") Long problemId) {
+		FeedbackResponse code = saveService.getMyCode(roomId,problemId);
+		return makeAPIResponse(code);
 	}
 	public void validationRequest(Errors errors){
 		if (errors.hasErrors()) {
