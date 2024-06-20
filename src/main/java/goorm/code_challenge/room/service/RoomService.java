@@ -99,13 +99,11 @@ public class RoomService {
     @Transactional
     public ParticipantInfo addUserToRoom(Long roomId) {
         Room room = roomRepository.findById(roomId)
-            .orElseThrow(() -> new RoomNotFoundException("해당 방을 찾을 수 없습니다."));
+            .orElseThrow(() -> new CustomException(ErrorCode.BAD_REQUEST, "방을 찾을 수 없습니다."));
 
-        // participants 컬렉션 초기화
-        Hibernate.initialize(room.getParticipants());
-
+        //Hibernate.initialize(room.getParticipants());
         if (room.getParticipants().size() >= 8) {
-            throw new RoomFullException("방이 가득 찼습니다.");
+            throw new CustomException(ErrorCode.BAD_REQUEST, "가득 찬 방입니다.");
         }
 
         User currentUser = getCurrentUser();
@@ -114,10 +112,13 @@ public class RoomService {
         }
 
         room.addParticipant(currentUser);
-        updateRoomStatus(room);
+        room.updateParticipantStatus(currentUser, ParticipantStatus.WAITING);
+
+        roomRepository.save(room);
 
         return new ParticipantInfo(currentUser.getLoginId(), ParticipantStatus.WAITING.name(), currentUser.getName(), currentUser.getProfileImage());
     }
+
 
 
     @Transactional

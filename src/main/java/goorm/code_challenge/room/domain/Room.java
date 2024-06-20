@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +15,7 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
+@Slf4j
 public class Room {
 
     @Id
@@ -45,7 +47,7 @@ public class Room {
     @Column(name = "question")
     private List<Long> problems = new ArrayList<>();
 
-    @OneToMany(mappedBy = "room", cascade = CascadeType.PERSIST, orphanRemoval = true)
+    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Participant> participants = new ArrayList<>();
 
     @Builder
@@ -60,6 +62,9 @@ public class Room {
     }
 
     public boolean isParticipant(User user) {
+        if (this.participants == null) {
+            return false;
+        }
         return this.participants.stream().anyMatch(participant -> participant.getUser().equals(user));
     }
 
@@ -67,7 +72,7 @@ public class Room {
         if (isParticipant(user)) {
             throw new RuntimeException("User is already a participant in the room");
         }
-        Participant participant = new Participant(this, user);
+         Participant participant = new Participant(this, user);
         this.participants.add(participant);
     }
 

@@ -13,6 +13,7 @@ import goorm.code_challenge.room.dto.response.ScoreDTO;
 import goorm.code_challenge.room.service.RoomService;
 import goorm.code_challenge.room.service.ScoreService;
 import goorm.code_challenge.user.domain.User;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -74,17 +75,9 @@ public class RoomController extends BaseController {
     }
 
     @PostMapping("/{roomId}/join")
-    public ResponseEntity<ParticipantInfo> joinRoom(@PathVariable("roomId") Long roomId) {
-        try {
+    public ApiResponse<ParticipantInfo> joinRoom(@PathVariable("roomId") Long roomId) {
             ParticipantInfo participantInfo = roomService.addUserToRoom(roomId);
-            return ResponseEntity.ok(participantInfo);
-        } catch (RoomFullException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
-        } catch (RoomNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
+            return makeAPIResponse(participantInfo);
     }
 
     @PostMapping("/{roomId}/leave")
@@ -135,5 +128,13 @@ public class RoomController extends BaseController {
     public ApiResponse<List<ScoreDTO>> getRoomScore(@PathVariable("roomId") Long roomId, @RequestParam("problemId") Long problemId) {
         List<ScoreDTO> roundScore = scoreService.getRoundScore(roomId, problemId);
         return makeAPIResponse(Collections.singletonList(roundScore));
+    }
+
+
+    @GetMapping("/{roomId}/feedback")
+    public ApiResponse<Boolean> isAllUserReady(@PathVariable("roomId") Long roomId){
+
+        Boolean isReady=scoreService.checkAllUserReady(roomId);
+        return makeAPIResponse(isReady);
     }
 }
