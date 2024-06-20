@@ -212,7 +212,7 @@ public class RoomService {
     }
 
     @Transactional
-    public void updateParticipantStatus(Long roomId, Long userId, ParticipantStatus status) {
+    public ParticipantInfo updateParticipantStatus(Long roomId, Long userId, ParticipantStatus status) {
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new CustomException(ErrorCode.BAD_REQUEST, "해당 방을 찾을 수 없습니다."));
         User user = userRepository.findById(userId)
@@ -220,6 +220,9 @@ public class RoomService {
 
         room.updateParticipantStatus(user, status);
         roomRepository.save(room);
+
+        // ParticipantInfo 객체 생성
+        return new ParticipantInfo(user.getLoginId(), status.name(), user.getName(), user.getProfileImage());
     }
 
     @Transactional

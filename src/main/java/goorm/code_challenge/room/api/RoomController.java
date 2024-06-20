@@ -111,10 +111,10 @@ public class RoomController extends BaseController {
     }
 
     @PostMapping("/{roomId}/unready")
-    public ResponseEntity<String> setUnReady(@PathVariable("roomId") Long roomId) {
+    public ResponseEntity<ParticipantInfo> setUnReady(@PathVariable("roomId") Long roomId) {
         User currentUser = roomService.getCurrentUser();
-        roomService.updateParticipantStatus(roomId, currentUser.getId(), ParticipantStatus.WAITING);
-        return ResponseEntity.ok("준비 해제");
+        ParticipantInfo participantInfo = roomService.updateParticipantStatus(roomId, currentUser.getId(), ParticipantStatus.WAITING);
+        return ResponseEntity.ok(participantInfo);
     }
 
     @PostMapping("/{roomId}/start")
