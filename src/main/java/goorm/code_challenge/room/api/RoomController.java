@@ -21,7 +21,9 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -118,10 +120,11 @@ public class RoomController extends BaseController {
     }
 
     @PostMapping("/{roomId}/start")
-    public ResponseEntity<String> startRoom(@PathVariable("roomId") Long roomId) {
-        User currentUser = roomService.getCurrentUser();
-        String message = roomService.startRoom(roomId, currentUser);
-        return new ResponseEntity<>(message, HttpStatus.OK);
+    public ResponseEntity<Map<String, String>> startRoom(@PathVariable("roomId") Long roomId) {
+        String message = roomService.startRoom(roomId);
+        Map<String, String> response = new HashMap<>();
+        response.put("message", message);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/{roomId}/score")
