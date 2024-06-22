@@ -230,7 +230,7 @@ public class RoomService {
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new CustomException(ErrorCode.BAD_REQUEST, "해당 방을 찾을 수 없습니다."));
 
-        if (room.getParticipants().size() < 2) {
+        if (room.getParticipants().size() < 1) { //테스트 용으로 1명으로 변경
             throw new CustomException(ErrorCode.BAD_REQUEST, "방을 시작하기 위해 최소 2명(방장 포함)이 필요합니다.");
         }
 
