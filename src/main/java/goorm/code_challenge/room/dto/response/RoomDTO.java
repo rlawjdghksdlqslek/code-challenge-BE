@@ -24,7 +24,7 @@ public class RoomDTO {
     public RoomDTO(Room room) {
         this.id = room.getRoomId();
         this.roomTitle = room.getRoomTitle();
-        this.hostName = room.getHost().getLoginId();
+        this.hostName = room.getHost().getName();
         this.profileImage = room.getHost().getProfileImage();
         this.averageDifficulty = room.getAverageDifficulty();
         this.description = room.getDescription();
