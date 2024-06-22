@@ -245,6 +245,15 @@ public class RoomService {
         }
     }
 
+    @Transactional(readOnly = true)
+    public String getRoomStatus(Long roomId) {
+        Room room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new CustomException(ErrorCode.BAD_REQUEST, "해당 방을 찾을 수 없습니다."));
+
+        // 방의 현재 상태 반환
+        return room.getRoomStatus().name();
+    }
+
     private void updateRoomStatus(Room room) {
         if (room.getParticipants().size() < 8) {
             room.setRoomStatus(RoomStatus.WAITING);

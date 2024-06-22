@@ -127,6 +127,14 @@ public class RoomController extends BaseController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @GetMapping("/{roomId}/status")
+    public ResponseEntity<Map<String, String>> getRoomStatus(@PathVariable("roomId") Long roomId) {
+        String status = roomService.getRoomStatus(roomId);
+        Map<String, String> response = new HashMap<>();
+        response.put("status", status);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
     @GetMapping("/{roomId}/score")
     public ApiResponse<List<ScoreDTO>> getRoomScore(@PathVariable("roomId") Long roomId, @RequestParam("problemId") Long problemId) {
         List<ScoreDTO> roundScore = scoreService.getRoundScore(roomId, problemId);
