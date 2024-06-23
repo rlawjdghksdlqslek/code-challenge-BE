@@ -18,6 +18,7 @@ public class RoomDTO {
     private String description;
     private int duration;
     private List<Long> problems;
+    private String roomStatus;
 
     public RoomDTO() {}
 
@@ -30,6 +31,7 @@ public class RoomDTO {
         this.description = room.getDescription();
         this.duration = room.getDuration();
         this.problems = room.getProblems();
+        this.roomStatus = room.getRoomStatus().name();
     }
 
     public Room toEntity(User host) {

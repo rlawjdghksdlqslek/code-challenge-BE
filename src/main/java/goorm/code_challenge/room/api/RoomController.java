@@ -13,7 +13,6 @@ import goorm.code_challenge.room.dto.response.ScoreDTO;
 import goorm.code_challenge.room.service.RoomService;
 import goorm.code_challenge.room.service.ScoreService;
 import goorm.code_challenge.user.domain.User;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -78,8 +77,8 @@ public class RoomController extends BaseController {
 
     @PostMapping("/{roomId}/join")
     public ApiResponse<ParticipantInfo> joinRoom(@PathVariable("roomId") Long roomId) {
-            ParticipantInfo participantInfo = roomService.addUserToRoom(roomId);
-            return makeAPIResponse(participantInfo);
+        ParticipantInfo participantInfo = roomService.addUserToRoom(roomId);
+        return makeAPIResponse(participantInfo);
     }
 
     @PostMapping("/{roomId}/leave")
