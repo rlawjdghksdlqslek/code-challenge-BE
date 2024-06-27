@@ -212,7 +212,7 @@ public class RoomService {
     }
 
     @Transactional
-    public void updateParticipantStatus(Long roomId, Long userId, ParticipantStatus status) {
+    public ParticipantInfo updateParticipantStatus(Long roomId, Long userId, ParticipantStatus status) {
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new CustomException(ErrorCode.BAD_REQUEST, "해당 방을 찾을 수 없습니다."));
         User user = userRepository.findById(userId)
@@ -220,28 +220,38 @@ public class RoomService {
 
         room.updateParticipantStatus(user, status);
         roomRepository.save(room);
+
+        // ParticipantInfo 객체 생성
+        return new ParticipantInfo(user.getLoginId(), status.name(), user.getName(), user.getProfileImage());
     }
 
     @Transactional
-    public String startRoom(Long roomId, User currentUser) {
+    public String startRoom(Long roomId) {
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new CustomException(ErrorCode.BAD_REQUEST, "해당 방을 찾을 수 없습니다."));
 
-        if (!room.getHost().getId().equals(currentUser.getId())) {
-            throw new CustomException(ErrorCode.UNAUTHORIZED, "방장만 방을 시작할 수 있습니다.");
-        }
-
-        if (room.getParticipants().size() < 2) {
+        if (room.getParticipants().size() < 1) { //테스트 용으로 1명으로 변경
             throw new CustomException(ErrorCode.BAD_REQUEST, "방을 시작하기 위해 최소 2명(방장 포함)이 필요합니다.");
         }
 
         if (room.allParticipantsReady()) {
             room.setRoomStatus(RoomStatus.ONGOING);
             roomRepository.save(room);
-            return "방이 시작되었습니다.";
+
+            log.info("방이 시작되었습니다: {}", roomId);
+            return "챌린지가 시작되었습니다.";
         } else {
             return "모든 참가자가 준비되지 않았습니다.";
         }
+    }
+
+    @Transactional(readOnly = true)
+    public String getRoomStatus(Long roomId) {
+        Room room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new CustomException(ErrorCode.BAD_REQUEST, "해당 방을 찾을 수 없습니다."));
+
+        // 방의 현재 상태 반환
+        return room.getRoomStatus().name();
     }
 
     private void updateRoomStatus(Room room) {

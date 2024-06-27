@@ -18,18 +18,20 @@ public class RoomDTO {
     private String description;
     private int duration;
     private List<Long> problems;
+    private String roomStatus;
 
     public RoomDTO() {}
 
     public RoomDTO(Room room) {
         this.id = room.getRoomId();
         this.roomTitle = room.getRoomTitle();
-        this.hostName = room.getHost().getLoginId();
+        this.hostName = room.getHost().getName();
         this.profileImage = room.getHost().getProfileImage();
         this.averageDifficulty = room.getAverageDifficulty();
         this.description = room.getDescription();
         this.duration = room.getDuration();
         this.problems = room.getProblems();
+        this.roomStatus = room.getRoomStatus().name();
     }
 
     public Room toEntity(User host) {

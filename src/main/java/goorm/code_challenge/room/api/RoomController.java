@@ -13,7 +13,6 @@ import goorm.code_challenge.room.dto.response.ScoreDTO;
 import goorm.code_challenge.room.service.RoomService;
 import goorm.code_challenge.room.service.ScoreService;
 import goorm.code_challenge.user.domain.User;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +20,9 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -76,8 +77,8 @@ public class RoomController extends BaseController {
 
     @PostMapping("/{roomId}/join")
     public ApiResponse<ParticipantInfo> joinRoom(@PathVariable("roomId") Long roomId) {
-            ParticipantInfo participantInfo = roomService.addUserToRoom(roomId);
-            return makeAPIResponse(participantInfo);
+        ParticipantInfo participantInfo = roomService.addUserToRoom(roomId);
+        return makeAPIResponse(participantInfo);
     }
 
     @PostMapping("/{roomId}/leave")
@@ -111,17 +112,26 @@ public class RoomController extends BaseController {
     }
 
     @PostMapping("/{roomId}/unready")
-    public ResponseEntity<String> setUnReady(@PathVariable("roomId") Long roomId) {
+    public ResponseEntity<ParticipantInfo> setUnReady(@PathVariable("roomId") Long roomId) {
         User currentUser = roomService.getCurrentUser();
-        roomService.updateParticipantStatus(roomId, currentUser.getId(), ParticipantStatus.WAITING);
-        return ResponseEntity.ok("준비 해제");
+        ParticipantInfo participantInfo = roomService.updateParticipantStatus(roomId, currentUser.getId(), ParticipantStatus.WAITING);
+        return ResponseEntity.ok(participantInfo);
     }
 
     @PostMapping("/{roomId}/start")
-    public ResponseEntity<String> startRoom(@PathVariable("roomId") Long roomId) {
-        User currentUser = roomService.getCurrentUser();
-        String message = roomService.startRoom(roomId, currentUser);
-        return new ResponseEntity<>(message, HttpStatus.OK);
+    public ResponseEntity<Map<String, String>> startRoom(@PathVariable("roomId") Long roomId) {
+        String message = roomService.startRoom(roomId);
+        Map<String, String> response = new HashMap<>();
+        response.put("message", message);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping("/{roomId}/status")
+    public ResponseEntity<Map<String, String>> getRoomStatus(@PathVariable("roomId") Long roomId) {
+        String status = roomService.getRoomStatus(roomId);
+        Map<String, String> response = new HashMap<>();
+        response.put("status", status);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/{roomId}/score")
